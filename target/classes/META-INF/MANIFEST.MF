@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Implementation-Title: uparservice
+Implementation-Version: 1.0-SNAPSHOT
+Implementation-Vendor-Id: org.heartfulness.upar
+Build-Jdk: 1.6.0_35
+Built-By: rsugasi
+Created-By: Maven Integration for Eclipse
+
