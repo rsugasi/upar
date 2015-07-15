@@ -6,5 +6,6 @@ server:
   - type: http
     port: 9001
 
-template: Hello, %s!
+template: Hello
 defaultName: Stranger
+defaultTopic: global

@@ -10,6 +10,9 @@ public class UparConfiguration extends Configuration {
 
     @NotEmpty
     private String defaultName = "Stranger";
+    
+    @NotEmpty
+    private String defaultTopic;
 
     @JsonProperty
     public String getTemplate() {
@@ -29,5 +32,15 @@ public class UparConfiguration extends Configuration {
     @JsonProperty
     public void setDefaultName(String name) {
         this.defaultName = name;
+    }
+    
+    @JsonProperty
+    public String getDefaultTopic() {
+        return defaultTopic;
+    }
+    
+    @JsonProperty
+    public void setDefaultTopic(String defaultTopic) {
+        this.defaultTopic = defaultTopic;
     }
 }
