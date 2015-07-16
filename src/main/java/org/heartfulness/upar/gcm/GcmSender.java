@@ -11,7 +11,7 @@ import org.json.JSONObject;
 
 public class GcmSender {
     
-    public static final String API_KEY = "AIzaSyBBNRpuEfZAzdl-I1TvQ-VcqGR22DVcIY8";
+    public static final String API_KEY = "AIzaSyBc_qArgXgt-8d-hVSPfc-a8i4M38wAU7k";
     
     public void sendMessage(String topic, String msg) {
         try {

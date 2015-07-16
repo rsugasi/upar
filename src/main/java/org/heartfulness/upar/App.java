@@ -37,10 +37,7 @@ public class App extends Application<UparConfiguration> {
                 "admin",
                 User.class)));
         environment.admin().setSecurityHandler(new AdminConstraintSecurityHandler("admin", "admin"));
-            final UparService resource = new UparService(
-                configuration.getDefaultName(),
-                configuration.getDefaultTopic()
-    );
+            final UparService resource = new UparService();
 
         final TemplateHealthCheck healthCheck =
         new TemplateHealthCheck(configuration.getTemplate());
