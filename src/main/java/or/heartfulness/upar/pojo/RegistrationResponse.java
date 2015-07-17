@@ -5,6 +5,7 @@ public class RegistrationResponse {
     private String authToken;
     private String name;
     private String type;
+    private String notification;
     private String[] topics;
     
     public String getAuthToken() {
@@ -30,6 +31,12 @@ public class RegistrationResponse {
     }
     public void setTopics(String[] topics) {
         this.topics = topics;
+    }
+    public String getNotification() {
+        return notification;
+    }
+    public void setNotification(String notification) {
+        this.notification = notification;
     }
 
 }

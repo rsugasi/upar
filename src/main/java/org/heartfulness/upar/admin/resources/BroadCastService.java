@@ -25,10 +25,12 @@ public class BroadCastService {
     
     @GET
     @Timed
-    public void sendMessageToGlobal(@QueryParam("msg") Optional<String> msg) {
-        final String value = String.format("%s", msg.or(defaultName));
+    public void sendMessageToGlobal(@QueryParam("msg") Optional<String> msg, 
+                                    @QueryParam("regId") Optional<String> regId) {
+        final String value = String.format("%s", msg.or(defaultName)).trim();
+        final String topic = regId.or(defaultId).trim();
         GcmSender gcmSender = new GcmSender();
-        gcmSender.sendMessage(defaultId, value);
+        gcmSender.sendMessage(topic, value);
     }
 
 }

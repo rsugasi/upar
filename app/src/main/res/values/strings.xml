@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Upar</string>
+    <string name="gcm_send_message">Device configured to receive messages</string>
+    <string name="registering_message">Generating InstanceID token...</string>
+    <string name="token_error_message">Device could not be configured properly</string>
+    <string name="gcm_defaultSenderId">265070050748</string>
+    <string name="button_register">Register</string>
+    <string name="button_get">Request Sitting</string>
+    <string name="button_give">Give Sitting</string>
+    <string name="server_url">http://192.168.1.2:9000</string>
+    <string name="sitting_server_url">http://192.168.1.2:9000</string>
+</resources>

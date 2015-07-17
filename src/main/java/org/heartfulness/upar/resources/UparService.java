@@ -33,12 +33,12 @@ public class UparService {
 
     public UparService() {    }
     
-    @Path("/register")
+    @Path("/registerUser")
     @GET
     @Timed
-    public RegistrationResponse registerToken(@QueryParam("regId") Optional<String> regId, 
-            @QueryParam("name") Optional<String> name, 
-            @QueryParam("id") Optional<String> abhyasiId,
+    public RegistrationResponse registerUser(@QueryParam("regId") Optional<String> regId, 
+            @QueryParam("fullname") Optional<String> name, 
+            @QueryParam("abhyasiid") Optional<String> abhyasiId,
             @QueryParam("type") Optional<String> type) {
         // retrieve the abhyasi id for this reg Id, 
         // if none exist, add a new row in the persistence storage
@@ -52,25 +52,53 @@ public class UparService {
         String typeOfMember = String.format("%s", type.or(defaultType));
         // TODO Get information about the User
         boolean isPrefect = false;
+        boolean isAbhyasi = false;
         if(typeOfMember.equalsIgnoreCase("PREFECT")) {
             isPrefect = true;
+        } else if(typeOfMember.equalsIgnoreCase("ABHYASI")) {
+            isAbhyasi = true;
         }
         RegistrationResponse response = new RegistrationResponse();
         response.setAuthToken(token);
         
         String[] topics = null;
-
+        String notification = "";
         if(isPrefect) {
             typeOfMember = "PREFECT";
             topics = new String[] {"global", "prefect", token};
-        } else {
+            notification = "yes";
+        } else if(isAbhyasi){
             typeOfMember = "ABHYASI";
             topics = new String[] {"global", "abhyasi", token};
+        } else {
+            typeOfMember = "";
+            topics = new String[] {"global"};
         }
         response.setType(typeOfMember);
         response.setTopics(topics);
         response.setName("Foo Bar");
+        response.setNotification(notification);
         
+        return response;
+    }
+    
+    @Path("/registerDevice")
+    @GET
+    @Timed
+    public RegistrationResponse registerDevice(@QueryParam("registrationId") Optional<String> regId) {
+        // retrieve the abhyasi id for this reg Id, 
+        // if none exist, add a new row in the persistence storage
+        // if one exists, delete and add this reg Id to it 
+        final String value = String.format("%s", regId.or(defaultName)).replaceAll("[^a-zA-Z0-9]","");
+        int length = value.length();
+        
+        String token = ((length>32)?value.substring(0, 32):value);
+        System.out.println("Registration ID received " + token);
+        
+        
+        RegistrationResponse response = new RegistrationResponse();
+        response.setAuthToken(token);
+        // no other data will be sent
         return response;
     }
     

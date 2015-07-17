@@ -1,0 +1,116 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:background="@color/highlighted_text_material_dark"
+    android:orientation="vertical" tools:context=".MainActivity">
+
+    <TextView android:text="@string/registering_message" android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/informationTextView"
+        android:textAppearance="?android:attr/textColorHighlight" />
+
+    <ProgressBar
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/registrationProgressBar" />
+
+
+    <EditText
+            android:id="@+id/fullname"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:hint="Full name or email address"
+        android:layout_marginRight="15dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginTop="20dp"
+        android:textColor="#fff"
+        android:textSize="20dp"
+        android:visibility="gone">
+            <requestFocus />
+    </EditText>
+
+    <EditText
+            android:id="@+id/abhyasiid"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:hint="Abhyasi ID"
+        android:layout_marginRight="15dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginTop="20dp"
+        android:textColor="#fff"
+        android:textSize="20dp"
+            android:visibility="gone">
+
+    </EditText>
+
+    <EditText
+        android:id="@+id/type"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:hint="type"
+        android:layout_marginRight="15dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginTop="20dp"
+        android:textColor="#fff"
+        android:textSize="20dp"
+        android:visibility="gone">
+
+    </EditText>
+    <!--
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="2dp"
+        android:layout_marginBottom="10dp"
+        android:background="#C0C0C0">
+    </View>
+    -->
+    <Button
+        android:layout_width="fill_parent"
+        android:layout_height="40dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginRight="15dp"
+        android:layout_marginLeft="15dp"
+        android:textColor="#fff"
+        android:textStyle="bold"
+        android:text="@string/button_register"
+        android:id="@+id/registerButton"
+        android:layout_gravity="center"
+        android:onClick="sendRegister"
+        android:visibility="gone"/>
+<TableLayout
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+    <TableRow>
+    <ToggleButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/togglebutton"
+        android:visibility="gone"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/button_get"
+        android:id="@+id/getSittingButton"
+        android:layout_gravity="center"
+        android:onClick="sendGetSitting"
+        android:visibility="gone"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/button_give"
+        android:id="@+id/giveSittingButton"
+        android:layout_gravity="center"
+        android:onClick="sendGiveSitting"
+        android:visibility="gone"/>
+    </TableRow>
+    </TableLayout>
+
+</LinearLayout>
