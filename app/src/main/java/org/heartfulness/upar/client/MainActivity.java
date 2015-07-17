@@ -32,6 +32,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ProgressBar;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
@@ -63,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
     private ProgressBar mRegistrationProgressBar;
     private TextView mInformationTextView;
     private Button button;
+    private String type;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
                     fullname.setVisibility(View.VISIBLE);
                     TextView abhyasiid = (TextView) findViewById(R.id.abhyasiid);
                     abhyasiid.setVisibility(View.VISIBLE);
-                    TextView typeOfUser = (TextView) findViewById(R.id.type);
+                    RadioGroup typeOfUser = (RadioGroup) findViewById(R.id.radios);
                     typeOfUser.setVisibility(View.VISIBLE);
 
                 } else {
@@ -203,8 +206,8 @@ public class MainActivity extends AppCompatActivity {
                 .getString(QuickstartPreferences.AUTH_TOKEN_SENT_BY_SERVER, "");
         TextView fullname = (TextView) findViewById(R.id.fullname);
         TextView abhyasiid = (TextView) findViewById(R.id.abhyasiid);
-        TextView type = (TextView) findViewById(R.id.type);
-        new RegisterUser(getBaseContext(), regId, fullname.getText().toString(), abhyasiid.getText().toString(), type.getText().toString()).execute();
+
+        new RegisterUser(getBaseContext(), regId, fullname.getText().toString(), abhyasiid.getText().toString(), type).execute();
     }
 
     /** Called when the user clicks the Send button */
@@ -225,6 +228,33 @@ public class MainActivity extends AppCompatActivity {
         new Register(getBaseContext(), getString(R.string.sitting_server_url) + "/giveSitting",regId).execute();
     }
 
+    /** Called when the user chooses the Radio button */
+    public void onRadioButtonClicked(View view) {
+
+        // Is the button now checked?
+        boolean checked = ((RadioButton) view).isChecked();
+
+        // Check which radio button was clicked
+        switch(view.getId()) {
+            case R.id.radio_abhyasi:
+                if (checked) {
+                   type = getString(R.string.abhyasi);
+                }
+                break;
+            case R.id.radio_prefect:
+                if (checked) {
+                    type = getString(R.string.prefect);
+                }
+                break;
+            case R.id.radio_ninja:
+                if (checked) {
+                    type = getString(R.string.none);
+                }
+                break;
+            default:
+                break;
+        }
+    }
 
     /**
      * Async task class to get json by making HTTP call
@@ -344,7 +374,7 @@ public class MainActivity extends AppCompatActivity {
             fullname.setVisibility(View.GONE);
             TextView abhyasiid = (TextView) findViewById(R.id.abhyasiid);
             abhyasiid.setVisibility(View.GONE);
-            TextView type = (TextView) findViewById(R.id.type);
+            RadioGroup type = (RadioGroup) findViewById(R.id.radios);
             type.setVisibility(View.GONE);
             if("yes".equalsIgnoreCase(notification)) {
                 ToggleButton tb = (ToggleButton) findViewById(R.id.togglebutton);

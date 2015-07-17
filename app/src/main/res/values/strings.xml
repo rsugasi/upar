@@ -9,4 +9,7 @@
     <string name="button_give">Give Sitting</string>
     <string name="server_url">http://192.168.1.2:9000</string>
     <string name="sitting_server_url">http://192.168.1.2:9000</string>
+    <string name="abhyasi">Abhyasi</string>
+    <string name="prefect">Prefect</string>
+    <string name="none">None</string>
 </resources>
