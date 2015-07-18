@@ -110,11 +110,15 @@ public class UparService {
                               @QueryParam("msg") String msg) {
 
     	Pair pair = PairingManager.getInstance().getPair(pairId);
+    	if(pair == null) {
+    	    return;
+    	}
     	String targetRegId = pair.getAbhyasiRegID();
     	if(targetRegId.equals(regId)){
     		targetRegId = pair.getPrefectRegID();
     	}
     	UparInput input = new UparInput();
+    	input.setSubmit(SubmitType.chat);
 		input.setMessage(msg);
 		sendMessage(targetRegId, input);
     }
@@ -141,6 +145,7 @@ public class UparService {
     		input.setSubmit(SubmitType.sharePair);
     		input.setMessage(pairID);
     		sendMessage(abhyasiRegID, input);
+    		sendMessage(regId, input);
     	}
     	return pairID;
     }

@@ -26,33 +26,32 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
+
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
-import com.google.android.gms.gcm.GcmPubSub;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 
+
+import org.heartfulness.upar.client.chat.DiscussArrayAdapter;
+import org.heartfulness.upar.client.chat.OneComment;
 import org.heartfulness.upar.client.handler.ServiceHandler;
 import org.heartfulness.upar.client.util.BadgeUtil;
 
-import org.heartfulness.upar.client.R;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -60,10 +59,11 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
     private static final String TAG = "MainActivity";
-
+    private DiscussArrayAdapter adapter;
     private BroadcastReceiver mRegistrationBroadcastReceiver;
     private ProgressBar mRegistrationProgressBar;
     private TextView mInformationTextView;
+    private ListView lv;
     private Button button;
     private String type;
 
@@ -72,8 +72,14 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         MyGcmListenerService.count.set(0);
+//        String path = "http://heartfulness.org/wp-content/uploads/2015/06/HFN_Logo_Opener_Long_20150627_mix.mp4";
+//        VideoView videoView = (VideoView)findViewById(R.id.VideoView);
+//        Uri uri=Uri.parse(path);
+//        videoView.setVideoURI(uri);
+//        videoView.start();
         BadgeUtil.setBadge(getBaseContext(), MyGcmListenerService.count.get());
-
+        SharedPreferences sharedPreferences =
+                PreferenceManager.getDefaultSharedPreferences(this);
         mRegistrationProgressBar = (ProgressBar) findViewById(R.id.registrationProgressBar);
         mRegistrationBroadcastReceiver = new BroadcastReceiver() {
             @Override
@@ -84,52 +90,26 @@ public class MainActivity extends AppCompatActivity {
                         PreferenceManager.getDefaultSharedPreferences(context);
                 boolean sentToken = sharedPreferences
                         .getBoolean(QuickstartPreferences.SENT_TOKEN_TO_SERVER, false);
-                try {
-                    FileInputStream fis = openFileInput(MyGcmListenerService.FILENAME);
-                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(fis));
-                    String line = "";
-                    while  ( ( line =bufferedReader.readLine()) !=null ){
-                        mInformationTextView.append(line);
-                    }
 
-                } catch (Exception e) {
-                    // do nothing
-                }
                 if (sentToken) {
                     mInformationTextView.setText(getString(R.string.gcm_send_message));
                 } else {
                     mInformationTextView.setText(getString(R.string.token_error_message));
                 }
-                String type = intent.getStringExtra("TYPE");
-                if(type == null || "".equals(type)) {
-                    // need to register
-                    button = (Button) findViewById(R.id.registerButton);
-
-                    TextView fullname = (TextView) findViewById(R.id.fullname);
-                    fullname.setVisibility(View.VISIBLE);
-                    TextView abhyasiid = (TextView) findViewById(R.id.abhyasiid);
-                    abhyasiid.setVisibility(View.VISIBLE);
-                    RadioGroup typeOfUser = (RadioGroup) findViewById(R.id.radios);
-                    typeOfUser.setVisibility(View.VISIBLE);
-
-                } else {
-                       Button b = (Button) findViewById(R.id.registerButton);
-                       b.setVisibility(View.GONE);
-                       if("PREFECT".equalsIgnoreCase(type)) {
-                            button = (Button) findViewById(R.id.giveSittingButton);
-                           ToggleButton tb = (ToggleButton) findViewById(R.id.togglebutton);
-                           tb.setVisibility(View.VISIBLE);
-                       } else if("ABHYASI".equalsIgnoreCase(type)) {
-                            button = (Button) findViewById(R.id.getSittingButton);
-                       } else if("NONE".equalsIgnoreCase(type)) {
-                           // TODO add Take introductory sitting button??
-                       } else {
-                            // DO nothing
-                       }
+                String m = intent.getStringExtra("MESSAGE");
+                if(m != null) {
+                    adapter.add(new OneComment(true, m));
                 }
+                String command = intent.getStringExtra("COMMAND");
+                if("CHAT".equalsIgnoreCase(command)){
+                    LinearLayout table = (LinearLayout) findViewById(R.id.form);
+                    table.setVisibility(View.VISIBLE);
 
-                if(button != null) {
-                    button.setVisibility(View.VISIBLE);
+                    lv = (ListView) findViewById(R.id.listView1);
+
+                    adapter = new DiscussArrayAdapter(getApplicationContext(), R.layout.listitem_discuss);
+
+                    lv.setAdapter(adapter);
                 }
             }
         };
@@ -140,7 +120,7 @@ public class MainActivity extends AppCompatActivity {
         toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 Bundle b = new Bundle();
-                String notification = "";
+                String notification;
                 if (isChecked) {
                     // The toggle is enabled
                     notification = "yes";
@@ -152,9 +132,56 @@ public class MainActivity extends AppCompatActivity {
                 startIntent(b);
             }
         });
+
+        refreshScreen(sharedPreferences);
     }
 
+    private void refreshScreen(SharedPreferences sharedPreferences) {
+
+        String type = sharedPreferences.getString(QuickstartPreferences.AUTH_TOKEN_TYPE, "");
+        if(type == null || "".equals(type)) {
+
+            // need to register
+            button = (Button) findViewById(R.id.registerButton);
+
+            TextView fullname = (TextView) findViewById(R.id.fullname);
+            fullname.setVisibility(View.VISIBLE);
+            TextView abhyasiid = (TextView) findViewById(R.id.abhyasiid);
+            abhyasiid.setVisibility(View.VISIBLE);
+            RadioGroup typeOfUser = (RadioGroup) findViewById(R.id.radios);
+            typeOfUser.setVisibility(View.VISIBLE);
+
+        } else {
+            Button b = (Button) findViewById(R.id.registerButton);
+            b.setVisibility(View.GONE);
+            if("PREFECT".equalsIgnoreCase(type)) {
+                button = (Button) findViewById(R.id.giveSittingButton);
+                ToggleButton tb = (ToggleButton) findViewById(R.id.togglebutton);
+                tb.setVisibility(View.VISIBLE);
+            } else if("ABHYASI".equalsIgnoreCase(type)) {
+                button = (Button) findViewById(R.id.getSittingButton);
+            } else if("NONE".equalsIgnoreCase(type)) {
+                // TODO add Take introductory sitting button??
+                Log.i(TAG, "User selected None as option");
+            }
+        }
+
+        if(button != null) {
+            button.setVisibility(View.VISIBLE);
+        }
+
+        // notification switch
+        String notify = sharedPreferences.getString(QuickstartPreferences.NOTIFICATION, "");
+        if(notify != null && "yes".equalsIgnoreCase(notify)) {
+            ToggleButton tb = (ToggleButton) findViewById(R.id.togglebutton);
+            tb.setChecked(true);
+        }
+
+    }
+
+
     private void startIntent(Bundle b) {
+        mRegistrationProgressBar.setVisibility(ProgressBar.VISIBLE);
         if (checkPlayServices()) {
             // Start IntentService to register this application with GCM.
             Intent intent = new Intent(this, RegistrationIntentService.class);
@@ -216,7 +243,7 @@ public class MainActivity extends AppCompatActivity {
                 PreferenceManager.getDefaultSharedPreferences(getBaseContext());
         String regId = sharedPreferences
                 .getString(QuickstartPreferences.AUTH_TOKEN_SENT_BY_SERVER, "");
-        new Register(getBaseContext(), getString(R.string.sitting_server_url) + "/getSitting",regId).execute();
+        new Register(getString(R.string.sitting_server_url) + "/getSitting",regId, null).execute();
     }
 
     /** Called when the user clicks the Send button */
@@ -225,7 +252,29 @@ public class MainActivity extends AppCompatActivity {
                 PreferenceManager.getDefaultSharedPreferences(getBaseContext());
         String regId = sharedPreferences
                 .getString(QuickstartPreferences.AUTH_TOKEN_SENT_BY_SERVER, "");
-        new Register(getBaseContext(), getString(R.string.sitting_server_url) + "/giveSitting",regId).execute();
+        new Register(getString(R.string.sitting_server_url) + "/giveSitting",regId, null).execute();
+    }
+    /** Called when user clicks the Send button in chat window */
+    public void sendMessage(View view) {
+        SharedPreferences sharedPreferences =
+                PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        String regId = sharedPreferences
+                .getString(QuickstartPreferences.AUTH_TOKEN_SENT_BY_SERVER, "");
+        String pairId = sharedPreferences
+                .getString(QuickstartPreferences.CHAT_PAIR_ID, "");
+        TextView message = (TextView) findViewById(R.id.message);
+        String payload;
+        try {
+            String msg = message.getText().toString().trim();
+            payload = "pairId=" + pairId + "&msg=" + URLEncoder.encode(msg, "UTF-8");
+            new Register(getString(R.string.sitting_server_url) + "/send", regId, payload).execute();
+            adapter.add(new OneComment(false, msg));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            mInformationTextView.setText("Failed while sending message");
+        }
+        message.setText("");
+
     }
 
     /** Called when the user chooses the Radio button */
@@ -262,13 +311,12 @@ public class MainActivity extends AppCompatActivity {
     private class Register extends AsyncTask<Void, Void, Void> {
 
         private final String regId;
-        private final Context context;
         private final String URL;
-        private String type;
+        private final String payload;
 
-        public Register(Context context, String URL, String regId) {
+        public Register(String URL, String regId, String payload) {
             this.regId = regId;
-            this.context = context;
+            this.payload = payload;
             this.URL = URL;
         }
 
@@ -280,11 +328,14 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected Void doInBackground(Void... arg0) {
             String SERVER_URL = URL + "?regId=" + regId;
+            if(payload !=null) {
+                SERVER_URL += "&" + payload;
+            }
             ServiceHandler handler = new ServiceHandler();
             String jsonResults = handler.makeServiceCall(SERVER_URL, ServiceHandler.GET);
             try {
                 if (jsonResults != null) {
-
+                    Log.i(TAG, jsonResults);
                 }
             } catch(Exception e) {
                 Log.e(TAG, e.getLocalizedMessage());
@@ -340,7 +391,7 @@ public class MainActivity extends AppCompatActivity {
                     String type = results.getString("type");
                     notification = results.getString("notification");
                     JSONArray jsonArray = results.getJSONArray("topics");
-                    ArrayList<String> list = new ArrayList<String>();
+                    ArrayList<String> list = new ArrayList<>();
                     for (int i=0; i<jsonArray.length(); i++) {
                         list.add( jsonArray.getString(i) );
                     }
@@ -377,12 +428,12 @@ public class MainActivity extends AppCompatActivity {
             RadioGroup type = (RadioGroup) findViewById(R.id.radios);
             type.setVisibility(View.GONE);
             if("yes".equalsIgnoreCase(notification)) {
+                sharedPreferences.edit().putString(QuickstartPreferences.NOTIFICATION, notification).apply();
                 ToggleButton tb = (ToggleButton) findViewById(R.id.togglebutton);
                 tb.setChecked(true);
-            } else {
-
             }
             mRegistrationProgressBar.setVisibility(ProgressBar.GONE);
+            refreshScreen(sharedPreferences);
         }
     }
 

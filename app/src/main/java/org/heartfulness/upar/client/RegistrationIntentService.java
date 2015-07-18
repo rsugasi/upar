@@ -30,11 +30,9 @@ import android.util.Log;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.android.gms.iid.InstanceID;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import org.heartfulness.upar.client.handler.ServiceHandler;
 
@@ -42,7 +40,6 @@ import org.heartfulness.upar.client.handler.ServiceHandler;
 public class RegistrationIntentService extends IntentService {
 
     private static final String TAG = "RegIntentService";
-    private JSONObject results;
 
     public RegistrationIntentService() {
         super(TAG);
@@ -84,19 +81,8 @@ public class RegistrationIntentService extends IntentService {
                     String notification = b.getString("notification");
                     ArrayList<String> TOPICS = new ArrayList<>();
                     TOPICS.add("prefect");
-                    if("yes".equalsIgnoreCase(notification)) {
-                        Intent subscription = new Intent(this, SubscriptionIntentService.class);
-                        subscription.putExtra("token", token);
-                        subscription.putExtra("topics", TOPICS.toArray(new String[TOPICS.size()]));
-                        subscription.putExtra("subscribe", "yes");
-                        startService(subscription);
-                    }
-                    if("no".equalsIgnoreCase(notification)) {
-                        Intent subscription = new Intent(this, SubscriptionIntentService.class);
-                        subscription.putExtra("token", token);
-                        subscription.putExtra("topics", TOPICS.toArray(new String[TOPICS.size()]));
-                        subscription.putExtra("unsubscribe", "yes");
-                        startService(subscription);
+                    if("yes".equalsIgnoreCase(notification) || "no".equalsIgnoreCase(notification)) {
+                        sendSubscription(sharedPreferences, notification, token, TOPICS);
                     }
                 }
             }
@@ -106,6 +92,15 @@ public class RegistrationIntentService extends IntentService {
             // on a third-party server, this ensures that we'll attempt the update at a later time.
             sharedPreferences.edit().putBoolean(QuickstartPreferences.SENT_TOKEN_TO_SERVER, false).apply();
         }
+    }
+
+    private void sendSubscription(SharedPreferences sharedPreferences, String notification, String token, ArrayList<String> topics) {
+        sharedPreferences.edit().putString("NOTIFY", notification).apply();
+        Intent subscription = new Intent(this, SubscriptionIntentService.class);
+        subscription.putExtra("token", token);
+        subscription.putExtra("topics", topics.toArray(new String[topics.size()]));
+        subscription.putExtra("notify", notification);
+        startService(subscription);
     }
 
     /**
@@ -123,8 +118,6 @@ public class RegistrationIntentService extends IntentService {
         } else {
             // Notify UI that registration has completed, so the progress indicator can be hidden.
             Intent registrationComplete = new Intent(QuickstartPreferences.REGISTRATION_COMPLETE);
-            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-            registrationComplete.putExtra("TYPE", sharedPreferences.getString(QuickstartPreferences.AUTH_TOKEN_TYPE, null));
             LocalBroadcastManager.getInstance(this.getBaseContext()).sendBroadcast(registrationComplete);
         }
     }
@@ -137,7 +130,6 @@ public class RegistrationIntentService extends IntentService {
         private final String regId;
         private final Context context;
         private String authToken;
-        private String type;
 
         public RegisterToken(Context context, String regId) {
             this.regId = regId;
@@ -177,7 +169,6 @@ public class RegistrationIntentService extends IntentService {
 
             // Notify UI that registration has completed, so the progress indicator can be hidden.
             Intent registrationComplete = new Intent(QuickstartPreferences.REGISTRATION_COMPLETE);
-            registrationComplete.putExtra("TYPE", type);
             LocalBroadcastManager.getInstance(context).sendBroadcast(registrationComplete);
         }
     }

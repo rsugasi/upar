@@ -23,4 +23,6 @@ public class QuickstartPreferences {
     public static final String AUTH_TOKEN_SENT_BY_SERVER = "authTokenFromServer";
     public static final String TOPICS_SENT_BY_SERVER = "gcmTopicsFromServer";
     public static final String AUTH_TOKEN_TYPE = "authTokenType";
+    public static final String CHAT_PAIR_ID = "authPairId";
+    public static final String NOTIFICATION = "notificationStatus";
 }

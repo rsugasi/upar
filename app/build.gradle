@@ -22,6 +22,10 @@ apply plugin: 'com.google.gms.google-services'
 android {
     compileSdkVersion 22
     buildToolsVersion "22.0.1"
+    
+    lintOptions {
+          abortOnError false
+      }
 
     defaultConfig {
         applicationId "org.heartfulness.upar.client"

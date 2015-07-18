@@ -3,10 +3,13 @@ package org.heartfulness.upar.client.handler;
 /**
  * Created by rsugasi on 6/27/15.
  */
+import android.util.Log;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 
+import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -19,7 +22,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 
 public class ServiceHandler {
-
+    static final String TAG = "ServiceHandler";
     static String response = null;
     public final static int GET = 1;
     public final static int POST = 2;
@@ -73,6 +76,10 @@ public class ServiceHandler {
 
                 httpResponse = httpClient.execute(httpGet);
 
+            }
+
+            for(Header header : httpResponse.getAllHeaders()) {
+                Log.i(TAG, "Header Name: " + header.getName() + " Value: " + header.getValue());
             }
             httpEntity = httpResponse.getEntity();
             response = httpEntity!= null ? EntityUtils.toString(httpEntity): "";

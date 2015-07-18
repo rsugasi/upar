@@ -5,6 +5,10 @@ public class UparInput {
 	
 	private String message;
 
+	public UparInput() {
+	    setSubmit(SubmitType.none);
+	}
+	
 	public String getSubmit() {
 		return submit;
 	}
@@ -25,7 +29,7 @@ public class UparInput {
 		this.message = type.value();
 	}
 	
-	public enum SubmitType { start, end, sharePair };
+	public enum SubmitType { start, end, sharePair, chat, none };
 	
 	public enum GenericMessageType {
 		noAbhyasiAvailable("No abhyasi waiting at this time!"),

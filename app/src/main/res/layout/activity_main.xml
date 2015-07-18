@@ -1,13 +1,23 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:background="@color/highlighted_text_material_dark"
-    android:orientation="vertical" tools:context=".MainActivity">
-
-    <TextView android:text="@string/registering_message" android:layout_width="wrap_content"
+<RelativeLayout
+xmlns:android="http://schemas.android.com/apk/res/android"
+xmlns:tools="http://schemas.android.com/tools"
+tools:context=".MainActivity"
+android:layout_width="match_parent"
+android:layout_height="match_parent"
+    android:background="@color/highlighted_text_material_dark">
+<!-- create content A and C before -->
+<LinearLayout
+    android:id="@+id/A"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_alignParentTop="true"
+    android:orientation="vertical" >
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <TableRow>
+    <TextView
+        android:text="@string/registering_message" android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/informationTextView"
         android:textAppearance="?android:attr/textColorHighlight" />
@@ -15,36 +25,100 @@
     <ProgressBar
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/registrationProgressBar" />
+        android:id="@+id/registrationProgressBar"
+        />
+        </TableRow>
+        <TableRow>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/button_get"
+        android:id="@+id/getSittingButton"
+        android:layout_gravity="center"
+        android:textStyle="bold"
+        android:onClick="sendGetSitting"
+        android:visibility="gone"/>
 
-
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/button_give"
+        android:id="@+id/giveSittingButton"
+        android:layout_gravity="center"
+        android:textStyle="bold"
+        android:onClick="sendGiveSitting"
+        android:visibility="gone"/>
+            <ToggleButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/togglebutton"
+                android:visibility="gone"/>
+        </TableRow>
+    </TableLayout>
+</LinearLayout>
+<LinearLayout
+    android:id="@+id/form"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_alignParentBottom="true"
+    android:visibility="gone"
+    android:orientation="vertical" >
     <EditText
-            android:id="@+id/fullname"
+        android:id="@+id/message"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10"
-        android:hint="Full name or email address"
+        android:hint="@string/message_hint"
         android:layout_marginRight="15dp"
         android:layout_marginLeft="15dp"
         android:layout_marginTop="20dp"
         android:textColor="#fff"
-        android:textSize="20dp"
+        android:textSize="20sp"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/button_send"
+        android:id="@+id/send"
+        android:textStyle="bold"
+        android:onClick="sendMessage"/>
+
+</LinearLayout>
+<!-- create content B regarding the previous ids -->
+<LinearLayout
+    android:id="@+id/B"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_below="@id/A"
+    android:layout_above="@id/form"
+    android:orientation="vertical" >
+
+    <EditText
+        android:id="@+id/fullname"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:hint="@string/name_hint"
+        android:layout_marginRight="15dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginTop="20dp"
+        android:textColor="#fff"
+        android:textSize="20sp"
         android:visibility="gone">
-            <requestFocus />
+        <requestFocus />
     </EditText>
 
     <EditText
-            android:id="@+id/abhyasiid"
+        android:id="@+id/abhyasiid"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10"
-        android:hint="Abhyasi ID"
+        android:hint="@string/abhyasi_hint"
         android:layout_marginRight="15dp"
         android:layout_marginLeft="15dp"
         android:layout_marginTop="20dp"
         android:textColor="#fff"
-        android:textSize="20dp"
-            android:visibility="gone">
+        android:textSize="20sp"
+        android:visibility="gone">
 
     </EditText>
     <!--
@@ -71,7 +145,6 @@
         android:layout_marginLeft="15dp"
         android:layout_marginTop="20dp"
         android:id="@+id/radios"
-        android:checkedButton="@+id/radio_abhyasi"
         android:visibility="gone">
         <RadioButton android:id="@+id/radio_abhyasi"
             android:layout_width="wrap_content"
@@ -110,36 +183,12 @@
         android:layout_gravity="center"
         android:onClick="sendRegister"
         android:visibility="gone"/>
-<TableLayout
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content">
-    <TableRow>
-    <ToggleButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/togglebutton"
-        android:visibility="gone"/>
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/button_get"
-        android:id="@+id/getSittingButton"
-        android:layout_gravity="center"
-        android:textStyle="bold"
-        android:onClick="sendGetSitting"
-        android:visibility="gone"/>
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/button_give"
-        android:id="@+id/giveSittingButton"
-        android:layout_gravity="center"
-        android:textStyle="bold"
-        android:onClick="sendGiveSitting"
-        android:visibility="gone"/>
-    </TableRow>
-    </TableLayout>
-
+    <ListView
+        android:id="@+id/listView1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+    </ListView>
 </LinearLayout>
+</RelativeLayout>

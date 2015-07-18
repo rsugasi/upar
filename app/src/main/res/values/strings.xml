@@ -12,4 +12,8 @@
     <string name="abhyasi">Abhyasi</string>
     <string name="prefect">Prefect</string>
     <string name="none">None</string>
+    <string name="button_send">Send</string>
+    <string name="message_hint">Type a message</string>
+    <string name="abhyasi_hint">Abhyasi ID</string>
+    <string name="name_hint">Full name or email address</string>
 </resources>

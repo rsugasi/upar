@@ -20,10 +20,13 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.google.android.gms.gcm.GcmListenerService;
@@ -35,6 +38,8 @@ import org.heartfulness.upar.client.MainActivity;
 import org.heartfulness.upar.client.util.BadgeUtil;
 
 import org.heartfulness.upar.client.R;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class MyGcmListenerService extends GcmListenerService {
 
@@ -90,11 +95,14 @@ public class MyGcmListenerService extends GcmListenerService {
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
                 PendingIntent.FLAG_ONE_SHOT);
-
+        String msg = parse(message);
+        if(msg == null) { // parse says nothing to notify
+            return;
+        }
         Uri defaultSoundUri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
-                .setSmallIcon(R.drawable.ic_stat_ic_notification)
-                .setContentTitle("GCM Message")
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle(getString(R.string.app_name))
                 .setContentText(message)
                 .setAutoCancel(true)
                 .setSound(defaultSoundUri)
@@ -105,5 +113,46 @@ public class MyGcmListenerService extends GcmListenerService {
 
         notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
         BadgeUtil.setBadge(getBaseContext(), count.incrementAndGet());
+    }
+
+    private String parse(String message) {
+        String messageText = null;
+        try {
+            JSONObject command = new JSONObject(message);
+            String status = command.getString("submit");
+            if("sharePair".equalsIgnoreCase(status)) {
+                String pairId = command.getString("message");
+                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+                sharedPreferences.edit().putString(QuickstartPreferences.CHAT_PAIR_ID, pairId).apply();
+
+                Intent registrationComplete = new Intent(QuickstartPreferences.REGISTRATION_COMPLETE);
+                registrationComplete.putExtra("COMMAND", "CHAT");
+                LocalBroadcastManager.getInstance(this).sendBroadcast(registrationComplete);
+            } else if("start".equalsIgnoreCase(status)) {
+                String pairId = command.getString("message");
+                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+                sharedPreferences.edit().putString(QuickstartPreferences.CHAT_PAIR_ID, pairId).apply();
+                messageText = null;
+            } else if("end".equalsIgnoreCase(status)) {
+                String pairId = command.getString("message");
+                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+                sharedPreferences.edit().remove(QuickstartPreferences.CHAT_PAIR_ID).apply();
+                messageText = null;
+            } else if("chat".equalsIgnoreCase(status)) {
+                String m = command.getString("message");
+
+                Intent registrationComplete = new Intent(QuickstartPreferences.REGISTRATION_COMPLETE);
+                registrationComplete.putExtra("MESSAGE", m);
+                LocalBroadcastManager.getInstance(this).sendBroadcast(registrationComplete);
+
+                messageText = null;
+            } else {
+                messageText = command.getString("message");;
+            }
+        } catch (JSONException e) {
+            // couldn't parse it as a JSON message. So, not a command
+            messageText = message;
+        }
+        return messageText;
     }
 }

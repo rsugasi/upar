@@ -6,7 +6,6 @@ import android.util.Log;
 
 import com.google.android.gms.gcm.GcmPubSub;
 
-import java.io.IOException;
 
 /**
  * Created by rsugasi on 7/16/15.
@@ -23,8 +22,8 @@ public class SubscriptionIntentService extends IntentService {
     protected void onHandleIntent(Intent intent) {
         String token = intent.getStringExtra("token");
         String[] topics = intent.getStringArrayExtra("topics");
-
-        if(intent.getStringExtra("unsubscribe") != null) {
+        String subscribe = intent.getStringExtra("notify");
+        if("no".equalsIgnoreCase(subscribe)) {
             unsubscribeTopics(token, topics);
         } else {
             subscribeTopics(token, topics);
@@ -35,7 +34,6 @@ public class SubscriptionIntentService extends IntentService {
      * Subscribe to any GCM topics of interest, as defined by the TOPICS constant.
      *
      * @param token GCM token
-     * @throws IOException if unable to reach the GCM PubSub service
      */
     // [START subscribe_topics]
     private void subscribeTopics(String token, String[] TOPICS) {
@@ -53,10 +51,7 @@ public class SubscriptionIntentService extends IntentService {
                     Log.e(TAG, e.getLocalizedMessage(), e);
                 }
             }
-        } else {
-            // Not subscribing to any topic
         }
-
     }
     // [END subscribe_topics]
 
