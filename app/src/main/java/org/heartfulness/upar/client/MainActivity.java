@@ -36,6 +36,7 @@ import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 
@@ -63,7 +64,6 @@ public class MainActivity extends AppCompatActivity {
     private BroadcastReceiver mRegistrationBroadcastReceiver;
     private ProgressBar mRegistrationProgressBar;
     private TextView mInformationTextView;
-    private ListView lv;
     private Button button;
     private String type;
 
@@ -78,8 +78,7 @@ public class MainActivity extends AppCompatActivity {
 //        videoView.setVideoURI(uri);
 //        videoView.start();
         BadgeUtil.setBadge(getBaseContext(), MyGcmListenerService.count.get());
-        SharedPreferences sharedPreferences =
-                PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         mRegistrationProgressBar = (ProgressBar) findViewById(R.id.registrationProgressBar);
         mRegistrationBroadcastReceiver = new BroadcastReceiver() {
             @Override
@@ -102,14 +101,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 String command = intent.getStringExtra("COMMAND");
                 if("CHAT".equalsIgnoreCase(command)){
-                    LinearLayout table = (LinearLayout) findViewById(R.id.form);
-                    table.setVisibility(View.VISIBLE);
-
-                    lv = (ListView) findViewById(R.id.listView1);
-
-                    adapter = new DiscussArrayAdapter(getApplicationContext(), R.layout.listitem_discuss);
-
-                    lv.setAdapter(adapter);
+                    showListView();
                 }
             }
         };
@@ -136,6 +128,52 @@ public class MainActivity extends AppCompatActivity {
         refreshScreen(sharedPreferences);
     }
 
+    private void pleaseStart(View view) {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        String regId = sharedPreferences.getString(QuickstartPreferences.AUTH_TOKEN_SENT_BY_SERVER, "");
+        String pairId = sharedPreferences.getString(QuickstartPreferences.CHAT_PAIR_ID, "");
+        new Register(getBaseContext(), getString(R.string.sitting_server_url) + "/begin",regId, "pairId=" + pairId).execute();
+    }
+
+    private void thatsAll(View view) {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        String regId = sharedPreferences.getString(QuickstartPreferences.AUTH_TOKEN_SENT_BY_SERVER, "");
+        String pairId = sharedPreferences.getString(QuickstartPreferences.CHAT_PAIR_ID, "");
+        new Register(getBaseContext(), getString(R.string.sitting_server_url) + "/end",regId, "pairId=" + pairId).execute();
+    }
+
+    private void toggleSitting() {
+        ToggleButton toggleSitting = (ToggleButton) findViewById(R.id.toggleSitting);
+        toggleSitting.setVisibility(View.VISIBLE);
+        toggleSitting.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                Bundle b = new Bundle();
+                String notification;
+                if (isChecked) {
+                    // The toggle is enabled
+                    pleaseStart(buttonView);
+                } else {
+                    // The toggle is disabled
+                    thatsAll(buttonView);
+                }
+
+            }
+        });
+    }
+
+    private void showListView() {
+        LinearLayout table = (LinearLayout) findViewById(R.id.form);
+        table.setVisibility(View.VISIBLE);
+
+        ListView lv = (ListView) findViewById(R.id.listView1);
+        lv.setTranscriptMode(ListView.TRANSCRIPT_MODE_ALWAYS_SCROLL);
+        lv.setStackFromBottom(true);
+
+        adapter = new DiscussArrayAdapter(getApplicationContext(), R.layout.listitem_discuss);
+
+        lv.setAdapter(adapter);
+    }
+
     private void refreshScreen(SharedPreferences sharedPreferences) {
 
         String type = sharedPreferences.getString(QuickstartPreferences.AUTH_TOKEN_TYPE, "");
@@ -158,6 +196,10 @@ public class MainActivity extends AppCompatActivity {
                 button = (Button) findViewById(R.id.giveSittingButton);
                 ToggleButton tb = (ToggleButton) findViewById(R.id.togglebutton);
                 tb.setVisibility(View.VISIBLE);
+                String pairId = sharedPreferences.getString(QuickstartPreferences.CHAT_PAIR_ID, null);
+                if(pairId != null) {
+                    toggleSitting();
+                }
             } else if("ABHYASI".equalsIgnoreCase(type)) {
                 button = (Button) findViewById(R.id.getSittingButton);
             } else if("NONE".equalsIgnoreCase(type)) {
@@ -189,6 +231,8 @@ public class MainActivity extends AppCompatActivity {
                 intent.putExtras(b);
             }
             startService(intent);
+        } else {
+            mInformationTextView.setText("This device does not support receiving messages.");
         }
     }
 
@@ -227,47 +271,40 @@ public class MainActivity extends AppCompatActivity {
 
     /** Called when the user clicks the Send button */
     public void sendRegister(View view) {
-        SharedPreferences sharedPreferences =
-                PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-        String regId = sharedPreferences
-                .getString(QuickstartPreferences.AUTH_TOKEN_SENT_BY_SERVER, "");
-        TextView fullname = (TextView) findViewById(R.id.fullname);
-        TextView abhyasiid = (TextView) findViewById(R.id.abhyasiid);
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        String regId = sharedPreferences.getString(QuickstartPreferences.AUTH_TOKEN_SENT_BY_SERVER, "");
+        TextView full_name = (TextView) findViewById(R.id.fullname);
+        TextView abhyasi_id = (TextView) findViewById(R.id.abhyasiid);
 
-        new RegisterUser(getBaseContext(), regId, fullname.getText().toString(), abhyasiid.getText().toString(), type).execute();
+        new RegisterUser(getBaseContext(), regId, full_name.getText().toString(), abhyasi_id.getText().toString(), type).execute();
     }
 
     /** Called when the user clicks the Send button */
     public void sendGetSitting(View view) {
-        SharedPreferences sharedPreferences =
-                PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-        String regId = sharedPreferences
-                .getString(QuickstartPreferences.AUTH_TOKEN_SENT_BY_SERVER, "");
-        new Register(getString(R.string.sitting_server_url) + "/getSitting",regId, null).execute();
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        String regId = sharedPreferences.getString(QuickstartPreferences.AUTH_TOKEN_SENT_BY_SERVER, "");
+        String pairId = sharedPreferences.getString(QuickstartPreferences.CHAT_PAIR_ID, "");
+        new Register(getBaseContext(), getString(R.string.sitting_server_url) + "/getSitting",regId, "pairId=" + pairId).execute();
     }
 
     /** Called when the user clicks the Send button */
     public void sendGiveSitting(View view) {
-        SharedPreferences sharedPreferences =
-                PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-        String regId = sharedPreferences
-                .getString(QuickstartPreferences.AUTH_TOKEN_SENT_BY_SERVER, "");
-        new Register(getString(R.string.sitting_server_url) + "/giveSitting",regId, null).execute();
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        String regId = sharedPreferences.getString(QuickstartPreferences.AUTH_TOKEN_SENT_BY_SERVER, "");
+        String pairId = sharedPreferences.getString(QuickstartPreferences.CHAT_PAIR_ID, "");
+        new Register(getBaseContext(), getString(R.string.sitting_server_url) + "/giveSitting",regId, "pairId=" + pairId).execute();
     }
     /** Called when user clicks the Send button in chat window */
     public void sendMessage(View view) {
-        SharedPreferences sharedPreferences =
-                PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-        String regId = sharedPreferences
-                .getString(QuickstartPreferences.AUTH_TOKEN_SENT_BY_SERVER, "");
-        String pairId = sharedPreferences
-                .getString(QuickstartPreferences.CHAT_PAIR_ID, "");
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        String regId = sharedPreferences.getString(QuickstartPreferences.AUTH_TOKEN_SENT_BY_SERVER, "");
+        String pairId = sharedPreferences.getString(QuickstartPreferences.CHAT_PAIR_ID, "");
         TextView message = (TextView) findViewById(R.id.message);
         String payload;
         try {
             String msg = message.getText().toString().trim();
             payload = "pairId=" + pairId + "&msg=" + URLEncoder.encode(msg, "UTF-8");
-            new Register(getString(R.string.sitting_server_url) + "/send", regId, payload).execute();
+            new Chat(getString(R.string.sitting_server_url) + "/send", regId, payload).execute();
             adapter.add(new OneComment(false, msg));
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
@@ -313,8 +350,73 @@ public class MainActivity extends AppCompatActivity {
         private final String regId;
         private final String URL;
         private final String payload;
+        private final Context context;
+        private String jsonMsg;
+        private boolean startChat;
 
-        public Register(String URL, String regId, String payload) {
+        public Register(Context context, String URL, String regId, String payload) {
+            this.regId = regId;
+            this.payload = payload;
+            this.URL = URL;
+            this.context = context;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            mRegistrationProgressBar.setVisibility(ProgressBar.VISIBLE);
+        }
+
+        @Override
+        protected Void doInBackground(Void... arg0) {
+            String SERVER_URL = URL + "?regId=" + regId;
+            if(payload !=null) {
+                SERVER_URL += "&" + payload;
+            }
+            ServiceHandler handler = new ServiceHandler();
+            String jsonResults = handler.makeServiceCall(SERVER_URL, ServiceHandler.GET);
+            try {
+                if (jsonResults != null && !"".equalsIgnoreCase(jsonResults)) {
+                    Log.i(TAG, jsonResults);
+                    JSONObject command = new JSONObject(jsonResults);
+                    String status = command.getString("submit");
+                    if("sharePair".equalsIgnoreCase(status)) {
+                        String pairId = command.getString("message");
+                        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+                        sharedPreferences.edit().putString(QuickstartPreferences.CHAT_PAIR_ID, pairId).apply();
+                        startChat = true;
+                    } if("error".equalsIgnoreCase(status)) {
+                        jsonMsg = command.getString("message");
+
+                    }
+                }
+            } catch(Exception e) {
+                Log.e(TAG, e.getLocalizedMessage());
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            mRegistrationProgressBar.setVisibility(ProgressBar.GONE);
+            if(jsonMsg != null && !"".equalsIgnoreCase(jsonMsg)) {
+                Toast.makeText(context, jsonMsg.trim(), Toast.LENGTH_SHORT).show();
+            }
+            if(startChat) {
+                toggleSitting();
+                showListView();
+            }
+        }
+    }
+
+    /**
+     * Async task class to get json by making HTTP call
+     * */
+    private class Chat extends AsyncTask<Void, Void, Void> {
+        private final String regId;
+        private final String URL;
+        private final String payload;
+
+        public Chat(String URL, String regId, String payload) {
             this.regId = regId;
             this.payload = payload;
             this.URL = URL;
@@ -332,20 +434,13 @@ public class MainActivity extends AppCompatActivity {
                 SERVER_URL += "&" + payload;
             }
             ServiceHandler handler = new ServiceHandler();
-            String jsonResults = handler.makeServiceCall(SERVER_URL, ServiceHandler.GET);
-            try {
-                if (jsonResults != null) {
-                    Log.i(TAG, jsonResults);
-                }
-            } catch(Exception e) {
-                Log.e(TAG, e.getLocalizedMessage());
-            }
+            handler.makeServiceCall(SERVER_URL, ServiceHandler.GET);
             return null;
-        }
 
+        }
         @Override
         protected void onPostExecute(Void result) {
-            mRegistrationProgressBar.setVisibility(ProgressBar.GONE);
+
         }
     }
 

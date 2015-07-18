@@ -21,6 +21,8 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -32,6 +34,7 @@ import android.util.Log;
 import com.google.android.gms.gcm.GcmListenerService;
 
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.heartfulness.upar.client.MainActivity;
@@ -91,14 +94,19 @@ public class MyGcmListenerService extends GcmListenerService {
      * @param message GCM message received.
      */
     private void sendNotification(String message) {
-        Intent intent = new Intent(this, MainActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
-                PendingIntent.FLAG_ONE_SHOT);
         String msg = parse(message);
         if(msg == null) { // parse says nothing to notify
             return;
         }
+        playNotification(msg);
+        BadgeUtil.setBadge(getBaseContext(), count.incrementAndGet());
+    }
+
+    private void playNotification(String message) {
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
+                PendingIntent.FLAG_ONE_SHOT);
         Uri defaultSoundUri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.mipmap.ic_launcher)
@@ -112,7 +120,6 @@ public class MyGcmListenerService extends GcmListenerService {
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
         notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
-        BadgeUtil.setBadge(getBaseContext(), count.incrementAndGet());
     }
 
     private String parse(String message) {
@@ -132,7 +139,15 @@ public class MyGcmListenerService extends GcmListenerService {
                 String pairId = command.getString("message");
                 SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
                 sharedPreferences.edit().putString(QuickstartPreferences.CHAT_PAIR_ID, pairId).apply();
+                MediaPlayer mp = MediaPlayer.create(this,
+                        R.raw.start);
+                mp.setVolume(1.0f, 1.0f);
+                mp.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                mp.start();
                 messageText = null;
+                Intent registrationComplete = new Intent(QuickstartPreferences.REGISTRATION_COMPLETE);
+                registrationComplete.putExtra("MESSAGE", "PLEASE START MEDITATION");
+                LocalBroadcastManager.getInstance(this).sendBroadcast(registrationComplete);
             } else if("end".equalsIgnoreCase(status)) {
                 String pairId = command.getString("message");
                 SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
@@ -147,7 +162,7 @@ public class MyGcmListenerService extends GcmListenerService {
 
                 messageText = null;
             } else {
-                messageText = command.getString("message");;
+                messageText = command.getString("message");
             }
         } catch (JSONException e) {
             // couldn't parse it as a JSON message. So, not a command

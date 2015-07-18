@@ -126,28 +126,63 @@ public class UparService {
     @Path("/getSitting")
     @GET
     @Timed
-    public void getSitting(@QueryParam("regId") String regId){
-    	AbhyasiQueue.getInstance().add(regId);
-    	UparInput input = new UparInput();
-    	input.setMessage("An abhyasi needs sitting.");
-    	sendMessage("prefect", input);
+    public void getSitting(@QueryParam("regId") String regId,
+                           @QueryParam("pairId") String pairId){
+        
+        UparInput input = alreadyInSitting(pairId, regId);
+        String topic;
+        if(input == null ){
+            AbhyasiQueue.getInstance().add(regId);
+            input = new UparInput();
+            input.setMessage("An abhyasi needs sitting.");
+            topic = "prefect";
+        } else {
+            topic = regId; // send the message to user
+        }
+            
+    	sendMessage(topic, input);
     }
     
     @Path("/giveSitting")
     @GET
     @Timed
-    public String giveSitting(@QueryParam("regId") String regId){
-    	String abhyasiRegID = AbhyasiQueue.getInstance().poll();
-    	String pairID = null;
-    	if(abhyasiRegID != null){
-    		pairID = PairingManager.getInstance().pair(regId, abhyasiRegID);
-    		UparInput input = new UparInput();
-    		input.setSubmit(SubmitType.sharePair);
-    		input.setMessage(pairID);
-    		sendMessage(abhyasiRegID, input);
-    		sendMessage(regId, input);
-    	}
-    	return pairID;
+    public UparInput giveSitting(@QueryParam("regId") String regId,
+                              @QueryParam("pairId") String pairId){
+        UparInput input = alreadyInSitting(pairId, regId);
+        String pairID = null;
+        if(input == null ){
+            String abhyasiRegID = AbhyasiQueue.getInstance().poll();    
+            input = new UparInput();
+            if(abhyasiRegID != null){
+                pairID = PairingManager.getInstance().pair(regId, abhyasiRegID);
+    		    input = new UparInput();
+    		    input.setSubmit(SubmitType.sharePair);
+    		    input.setMessage(pairID);
+    		    sendMessage(abhyasiRegID, input);
+    		} else {
+    		    input.setSubmit(SubmitType.error);
+    		    input.setMessage(GenericMessageType.noAbhyasiAvailable);
+    		}            
+    	} 
+        return sendJSONMessage(regId, input);
+    }
+    
+    
+    
+    private UparInput sendJSONMessage(String regId, UparInput input) {
+        return input;
+    }
+
+    private UparInput alreadyInSitting(String pairId, String regId) {
+        Pair pair = PairingManager.getInstance().getPair(pairId);
+        UparInput input = null;
+        if(pair != null) {
+            input = new UparInput();
+            input.setSubmit(SubmitType.error);
+            input.setMessage(GenericMessageType.alreadyInASitting);
+            //topic = regId;
+        }
+        return input;
     }
     
     @Path("/begin")
@@ -155,9 +190,13 @@ public class UparService {
     @Timed
     public void beginSitting(@QueryParam("pairId") String pairId){
     	Pair pair = PairingManager.getInstance().getPair(pairId);
-    	UparInput input = new UparInput();
-    	input.setSubmit(SubmitType.start);
-    	sendMessage(pair.getAbhyasiRegID(), input);
+    	if(pair != null) {
+    	    UparInput input = new UparInput();
+    	    input.setSubmit(SubmitType.start);
+    	    sendMessage(pair.getAbhyasiRegID(), input);
+    	} else {
+    	    // TODO send error
+    	}
     }
     
     @Path("/end")
@@ -165,9 +204,13 @@ public class UparService {
     @Timed
     public void endSitting(@QueryParam("pairId") String pairId){
     	Pair pair = PairingManager.getInstance().getPair(pairId);
-    	UparInput input = new UparInput();
-    	input.setSubmit(SubmitType.end);
-    	sendMessage(pair.getAbhyasiRegID(), input);
+    	if(pair != null) {
+    	    UparInput input = new UparInput();
+    	    input.setSubmit(SubmitType.end);
+    	    sendMessage(pair.getAbhyasiRegID(), input);
+    	} else {
+    	    // TODO send error
+    	}
     }
 
     @Path("/closeSession")

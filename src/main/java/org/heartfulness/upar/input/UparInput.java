@@ -29,10 +29,11 @@ public class UparInput {
 		this.message = type.value();
 	}
 	
-	public enum SubmitType { start, end, sharePair, chat, none };
+	public enum SubmitType { start, end, sharePair, chat, none, error };
 	
 	public enum GenericMessageType {
 		noAbhyasiAvailable("No abhyasi waiting at this time!"),
+		alreadyInASitting("Please complete or cancel the current sitting to proceed"),
 		sessionClose("Session Closed!");
 		private String value;
 		private GenericMessageType(String value) {

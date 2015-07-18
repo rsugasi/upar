@@ -48,10 +48,17 @@ android:layout_height="match_parent"
         android:textStyle="bold"
         android:onClick="sendGiveSitting"
         android:visibility="gone"/>
-            <ToggleButton
+        <ToggleButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/togglebutton"
+                android:visibility="gone"/>
+            <ToggleButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/toggleSitting"
+                android:textOff="Please Start"
+                android:textOn="That's All"
                 android:visibility="gone"/>
         </TableRow>
     </TableLayout>
