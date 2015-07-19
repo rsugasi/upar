@@ -5,6 +5,8 @@ public class UparInput {
 	
 	private String message;
 
+	private Integer count;
+	
 	public UparInput() {
 	    setSubmit(SubmitType.none);
 	}
@@ -29,12 +31,23 @@ public class UparInput {
 		this.message = type.value();
 	}
 	
-	public enum SubmitType { start, end, sharePair, chat, none, error, close };
+
+	public Integer getCount() {
+		return count;
+	}
+
+	public void setCount(Integer count) {
+		this.count = count;
+	}
+
+
+	public enum SubmitType { start, end, sharePair, chat, none, error, close, success };
 	
 	public enum GenericMessageType {
 		noAbhyasiAvailable("No abhyasi waiting at this time!"),
 		alreadyInASitting("Please complete or cancel the current sitting to proceed"),
-		sessionClose("Session Closed!");
+		sessionClose("Session Closed!"),
+		abhyasiJoined("Abhyasi joined for sitting!");
 		private String value;
 		private GenericMessageType(String value) {
 			this.value = value;

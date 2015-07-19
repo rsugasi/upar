@@ -15,7 +15,8 @@ import org.heartfulness.upar.gcm.GcmSender;
 import org.heartfulness.upar.input.UparInput;
 import org.heartfulness.upar.input.UparInput.GenericMessageType;
 import org.heartfulness.upar.input.UparInput.SubmitType;
-import org.heartfulness.upar.queue.AbhyasiQueue;
+import org.heartfulness.upar.queue.AbhyasiQueueManager;
+//import org.heartfulness.upar.queue.AbhyasiQueue;
 import org.heartfulness.upar.queue.Pair;
 import org.heartfulness.upar.queue.PairingManager;
 
@@ -30,7 +31,8 @@ import com.google.common.base.Optional;
 public class UparService {
     private final String defaultName = "Random ID";
     private static final String defaultType = "PREFECT";
-
+    private static final String PREFECT_TOPIC = "prefect";
+    
     public UparService() {    }
     
     @Path("/registerUser")
@@ -126,49 +128,54 @@ public class UparService {
     @Path("/getSitting")
     @GET
     @Timed
-    public UparInput getSitting(@QueryParam("regId") String regId,
-                           @QueryParam("pairId") String pairId){
-        
-        UparInput input = alreadyInSitting(pairId, regId);
-        String topic;
-        if(input == null ){
-            AbhyasiQueue.getInstance().add(regId);
-            input = new UparInput();
-            input.setMessage("An abhyasi needs sitting.");
-            topic = "prefect";
-            sendMessage(topic, input);
-        } else {
-            topic = regId; // send the message to user
-        }
-            
-        return sendJSONMessage(regId, input);
+    public UparInput getSitting(@QueryParam("regId") String regId){
+		UparInput input = new UparInput();
+    	if(AbhyasiQueueManager.getInstance().add(regId)){
+    		input.setSubmit(SubmitType.success);
+    		broadcastBadgeToPrefects(AbhyasiQueueManager.getInstance().getAbhyasiCount(), true);
+    	}
+    	else{
+    		input.setSubmit(SubmitType.error);    		
+    	}
+        return input;
+    }
+    
+    private void broadcastBadgeToPrefects(Integer count, boolean added){
+    	UparInput input = new UparInput();
+    	input.setCount(count);
+    	if(added){
+    		input.setMessage(GenericMessageType.abhyasiJoined);
+    	}
+    	sendMessage(PREFECT_TOPIC, input);
     }
     
     @Path("/giveSitting")
     @GET
     @Timed
-    public UparInput giveSitting(@QueryParam("regId") String regId,
-                              @QueryParam("pairId") String pairId){
-        UparInput input = alreadyInSitting(pairId, regId);
+    public UparInput giveSitting(@QueryParam("regId") String regId){
         String pairID = null;
-        if(input == null ){
-            String abhyasiRegID = AbhyasiQueue.getInstance().poll();    
-            input = new UparInput();
-            if(abhyasiRegID != null){
-                pairID = PairingManager.getInstance().pair(regId, abhyasiRegID);
-    		    input = new UparInput();
-    		    input.setSubmit(SubmitType.sharePair);
-    		    input.setMessage(pairID);
-    		    sendMessage(abhyasiRegID, input);
-    		} else {
-    		    input.setSubmit(SubmitType.error);
-    		    input.setMessage(GenericMessageType.noAbhyasiAvailable);
-    		}            
-    	} 
-        return sendJSONMessage(regId, input);
+        String abhyasiRegID = AbhyasiQueueManager.getInstance().poll();
+        UparInput input = new UparInput();
+        if(abhyasiRegID != null){
+            pairID = PairingManager.getInstance().pair(regId, abhyasiRegID);
+		    input.setSubmit(SubmitType.sharePair);
+		    input.setMessage(pairID);
+		    sendMessage(abhyasiRegID, input);
+	    	broadcastBadgeToPrefects(AbhyasiQueueManager.getInstance().getAbhyasiCount(), false);
+		} else {
+		    input.setSubmit(SubmitType.error);
+		    input.setMessage(GenericMessageType.noAbhyasiAvailable);
+		}
+        return input;
     }
     
-    
+    @Path("/cancelSitting")
+    @GET
+    @Timed
+    public void cancelSitting(@QueryParam("regId") String regId){
+    	AbhyasiQueueManager.getInstance().remove(regId.toString());
+    	broadcastBadgeToPrefects(AbhyasiQueueManager.getInstance().getAbhyasiCount(), false);
+    }
     
     private UparInput sendJSONMessage(String regId, UparInput input) {
         return input;
