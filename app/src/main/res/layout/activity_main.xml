@@ -60,6 +60,12 @@ android:layout_height="match_parent"
                 android:textOff="Please Start"
                 android:textOn="That's All"
                 android:visibility="gone"/>
+            <ImageButton android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:id="@+id/button_cancel"
+                android:src="@drawable/ic_cancel_black_18dp"
+                android:onClick="closeSession"
+                android:visibility="gone"/>
         </TableRow>
     </TableLayout>
 </LinearLayout>
@@ -195,7 +201,8 @@ android:layout_height="match_parent"
     <ListView
         android:id="@+id/listView1"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp">
     </ListView>
 </LinearLayout>
 </RelativeLayout>

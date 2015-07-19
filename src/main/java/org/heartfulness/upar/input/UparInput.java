@@ -29,7 +29,7 @@ public class UparInput {
 		this.message = type.value();
 	}
 	
-	public enum SubmitType { start, end, sharePair, chat, none, error };
+	public enum SubmitType { start, end, sharePair, chat, none, error, close };
 	
 	public enum GenericMessageType {
 		noAbhyasiAvailable("No abhyasi waiting at this time!"),

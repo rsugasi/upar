@@ -34,13 +34,14 @@ import android.util.Log;
 import com.google.android.gms.gcm.GcmListenerService;
 
 import java.io.FileOutputStream;
-import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.heartfulness.upar.client.MainActivity;
+
 import org.heartfulness.upar.client.util.BadgeUtil;
 
-import org.heartfulness.upar.client.R;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -136,32 +137,27 @@ public class MyGcmListenerService extends GcmListenerService {
                 registrationComplete.putExtra("COMMAND", "CHAT");
                 LocalBroadcastManager.getInstance(this).sendBroadcast(registrationComplete);
             } else if("start".equalsIgnoreCase(status)) {
-                String pairId = command.getString("message");
-                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-                sharedPreferences.edit().putString(QuickstartPreferences.CHAT_PAIR_ID, pairId).apply();
-                MediaPlayer mp = MediaPlayer.create(this,
-                        R.raw.start);
-                mp.setVolume(1.0f, 1.0f);
-                mp.setAudioStreamType(AudioManager.STREAM_MUSIC);
-                mp.start();
+                playAudio(R.raw.start, "PLEASE START MEDITATION "); // play audio
                 messageText = null;
-                Intent registrationComplete = new Intent(QuickstartPreferences.REGISTRATION_COMPLETE);
-                registrationComplete.putExtra("MESSAGE", "PLEASE START MEDITATION");
-                LocalBroadcastManager.getInstance(this).sendBroadcast(registrationComplete);
+
             } else if("end".equalsIgnoreCase(status)) {
-                String pairId = command.getString("message");
-                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-                sharedPreferences.edit().remove(QuickstartPreferences.CHAT_PAIR_ID).apply();
+                playAudio(R.raw.end, "THAT'S ALL"); // play audio
                 messageText = null;
+
             } else if("chat".equalsIgnoreCase(status)) {
                 String m = command.getString("message");
-
                 Intent registrationComplete = new Intent(QuickstartPreferences.REGISTRATION_COMPLETE);
                 registrationComplete.putExtra("MESSAGE", m);
                 LocalBroadcastManager.getInstance(this).sendBroadcast(registrationComplete);
 
                 messageText = null;
-            } else {
+            } else if("close".equalsIgnoreCase(status)) {
+                messageText = null;
+                Intent registrationComplete = new Intent(QuickstartPreferences.REGISTRATION_COMPLETE);
+                registrationComplete.putExtra("COMMAND", "CLOSECHAT");
+                LocalBroadcastManager.getInstance(this).sendBroadcast(registrationComplete);
+            }
+            else {
                 messageText = command.getString("message");
             }
         } catch (JSONException e) {
@@ -169,5 +165,18 @@ public class MyGcmListenerService extends GcmListenerService {
             messageText = message;
         }
         return messageText;
+    }
+
+    private void playAudio(int start, String broadcastMsg) {
+        MediaPlayer mp = MediaPlayer.create(this, start);
+        mp.setVolume(1.0f, 1.0f);
+        mp.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        mp.start();
+
+        Intent registrationComplete = new Intent(QuickstartPreferences.REGISTRATION_COMPLETE);
+        DateFormat df = new SimpleDateFormat("dd/MM/yy HH:mm:ss");
+        Date dateObj = new Date();
+        registrationComplete.putExtra("MESSAGE", broadcastMsg + " " + df.format(dateObj));
+        LocalBroadcastManager.getInstance(this).sendBroadcast(registrationComplete);
     }
 }

@@ -35,6 +35,10 @@ public class DiscussArrayAdapter extends ArrayAdapter<OneComment> {
         super(context, textViewResourceId);
     }
 
+    public void clear() {
+        super.clear();
+    }
+
     public int getCount() {
         return this.countries.size();
     }

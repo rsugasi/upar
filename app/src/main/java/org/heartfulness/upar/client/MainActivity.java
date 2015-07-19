@@ -27,9 +27,11 @@ import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -102,6 +104,9 @@ public class MainActivity extends AppCompatActivity {
                 String command = intent.getStringExtra("COMMAND");
                 if("CHAT".equalsIgnoreCase(command)){
                     showListView();
+                    showCancelButton();
+                } else if("CLOSECHAT".equalsIgnoreCase(command)) {
+                    closeChat(sharedPreferences);
                 }
             }
         };
@@ -126,6 +131,19 @@ public class MainActivity extends AppCompatActivity {
         });
 
         refreshScreen(sharedPreferences);
+    }
+
+    private void closeChat(SharedPreferences sharedPreferences) {
+        sharedPreferences.edit().remove(QuickstartPreferences.CHAT_PAIR_ID);
+        ToggleButton toggleSitting = (ToggleButton) findViewById(R.id.toggleSitting);
+        toggleSitting.setVisibility(View.GONE);
+        ImageButton cancelButton = (ImageButton) findViewById(R.id.button_cancel);
+        cancelButton.setVisibility(View.GONE);
+
+        LinearLayout table = (LinearLayout) findViewById(R.id.form);
+        table.setVisibility(View.GONE);
+        ListView lv = (ListView) findViewById(R.id.listView1);
+        lv.getAdapter();
     }
 
     private void pleaseStart(View view) {
@@ -174,6 +192,11 @@ public class MainActivity extends AppCompatActivity {
         lv.setAdapter(adapter);
     }
 
+    private void showCancelButton() {
+        ImageButton cancelButton = (ImageButton) findViewById(R.id.button_cancel);
+        cancelButton.setVisibility(View.VISIBLE);
+    }
+
     private void refreshScreen(SharedPreferences sharedPreferences) {
 
         String type = sharedPreferences.getString(QuickstartPreferences.AUTH_TOKEN_TYPE, "");
@@ -199,6 +222,7 @@ public class MainActivity extends AppCompatActivity {
                 String pairId = sharedPreferences.getString(QuickstartPreferences.CHAT_PAIR_ID, null);
                 if(pairId != null) {
                     toggleSitting();
+                    showCancelButton();
                 }
             } else if("ABHYASI".equalsIgnoreCase(type)) {
                 button = (Button) findViewById(R.id.getSittingButton);
@@ -269,7 +293,15 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-    /** Called when the user clicks the Send button */
+    /** Called when user clicks Close Chat */
+    public void closeSession(View view) {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        String regId = sharedPreferences.getString(QuickstartPreferences.AUTH_TOKEN_SENT_BY_SERVER, "");
+        String pairId = sharedPreferences.getString(QuickstartPreferences.CHAT_PAIR_ID, "");
+        new Register(getBaseContext(), getString(R.string.sitting_server_url) + "/closeSession",regId, "pairId=" + pairId).execute();
+    }
+
+    /** Called when the user clicks the Register button on first time download of application */
     public void sendRegister(View view) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
         String regId = sharedPreferences.getString(QuickstartPreferences.AUTH_TOKEN_SENT_BY_SERVER, "");
@@ -353,6 +385,7 @@ public class MainActivity extends AppCompatActivity {
         private final Context context;
         private String jsonMsg;
         private boolean startChat;
+        private boolean closeChat;
 
         public Register(Context context, String URL, String regId, String payload) {
             this.regId = regId;
@@ -384,7 +417,10 @@ public class MainActivity extends AppCompatActivity {
                         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
                         sharedPreferences.edit().putString(QuickstartPreferences.CHAT_PAIR_ID, pairId).apply();
                         startChat = true;
-                    } if("error".equalsIgnoreCase(status)) {
+                    } else if("close".equalsIgnoreCase(status)) {
+                        closeChat = true;
+                    }
+                    if("error".equalsIgnoreCase(status)) {
                         jsonMsg = command.getString("message");
 
                     }
@@ -399,11 +435,16 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(Void result) {
             mRegistrationProgressBar.setVisibility(ProgressBar.GONE);
             if(jsonMsg != null && !"".equalsIgnoreCase(jsonMsg)) {
-                Toast.makeText(context, jsonMsg.trim(), Toast.LENGTH_SHORT).show();
+                Toast t = Toast.makeText(context, jsonMsg.trim(), Toast.LENGTH_SHORT);
+                t.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL, 0, 0);
+                t.show();
             }
             if(startChat) {
                 toggleSitting();
                 showListView();
+                showCancelButton();
+            } else if(closeChat) {
+                closeChat(PreferenceManager.getDefaultSharedPreferences(context));
             }
         }
     }

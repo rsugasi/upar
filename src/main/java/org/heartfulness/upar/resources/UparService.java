@@ -126,7 +126,7 @@ public class UparService {
     @Path("/getSitting")
     @GET
     @Timed
-    public void getSitting(@QueryParam("regId") String regId,
+    public UparInput getSitting(@QueryParam("regId") String regId,
                            @QueryParam("pairId") String pairId){
         
         UparInput input = alreadyInSitting(pairId, regId);
@@ -136,11 +136,12 @@ public class UparService {
             input = new UparInput();
             input.setMessage("An abhyasi needs sitting.");
             topic = "prefect";
+            sendMessage(topic, input);
         } else {
             topic = regId; // send the message to user
         }
             
-    	sendMessage(topic, input);
+        return sendJSONMessage(regId, input);
     }
     
     @Path("/giveSitting")
@@ -216,19 +217,21 @@ public class UparService {
     @Path("/closeSession")
     @GET
     @Timed
-    public void closeSession(@QueryParam("regId") String regId,
+    public UparInput closeSession(@QueryParam("regId") String regId,
     		@QueryParam("pairId") String pairId){
     	
     	Pair pair = PairingManager.getInstance().getPair(pairId);
+    	UparInput input = new UparInput();
     	if(PairingManager.getInstance().closePair(pairId)){
 	    	String targetRegId = pair.getAbhyasiRegID();
 	    	if(targetRegId.equals(regId)){
 	    		targetRegId = pair.getPrefectRegID();
-	    	}
-	    	UparInput input = new UparInput();
+	    	}	    	
+	    	input.setSubmit(SubmitType.close);
 			input.setMessage(GenericMessageType.sessionClose);
 			sendMessage(targetRegId, input);
     	}
+    	return input;
     }
     
     public void sendMessage(String regId, UparInput input) {
