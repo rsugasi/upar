@@ -7,8 +7,8 @@
     <string name="button_register">Register</string>
     <string name="button_get">Request Sitting</string>
     <string name="button_give">Give Sitting</string>
-    <string name="server_url">http://192.168.1.2:9000</string>
-    <string name="sitting_server_url">http://192.168.1.2:9000</string>
+    <string name="server_url">http://192.168.1.7:9000</string>
+    <string name="sitting_server_url">http://192.168.1.7:9000</string>
     <string name="abhyasi">Abhyasi</string>
     <string name="prefect">Prefect</string>
     <string name="none">None</string>
