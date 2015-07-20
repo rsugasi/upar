@@ -41,13 +41,15 @@ public class UparInput {
 	}
 
 
-	public enum SubmitType { start, end, sharePair, chat, none, error, close, success };
+	public enum SubmitType { start, end, sharePair, chat, none, error, close, success, badge };
 	
 	public enum GenericMessageType {
 		noAbhyasiAvailable("No abhyasi waiting at this time!"),
 		alreadyInASitting("Please complete or cancel the current sitting to proceed"),
 		sessionClose("Session Closed!"),
-		abhyasiJoined("Abhyasi joined for sitting!");
+		abhyasiJoined("Abhyasi joined for sitting!"),
+		alreadyRequestedASitting("A sitting request has already been raised. Ignoring current request."),
+		invalidSittingSession("This session is already closed.");
 		private String value;
 		private GenericMessageType(String value) {
 			this.value = value;

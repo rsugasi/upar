@@ -30,6 +30,8 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+import android.view.Gravity;
+import android.widget.Toast;
 
 import com.google.android.gms.gcm.GcmListenerService;
 
@@ -96,11 +98,10 @@ public class MyGcmListenerService extends GcmListenerService {
      */
     private void sendNotification(String message) {
         String msg = parse(message);
-        if(msg == null) { // parse says nothing to notify
+        if(msg == null || "null".equalsIgnoreCase(msg)) { // parse says nothing to notify
             return;
         }
         playNotification(msg);
-        BadgeUtil.setBadge(getBaseContext(), count.incrementAndGet());
     }
 
     private void playNotification(String message) {
@@ -153,9 +154,20 @@ public class MyGcmListenerService extends GcmListenerService {
                 messageText = null;
             } else if("close".equalsIgnoreCase(status)) {
                 messageText = null;
+                String m = command.getString("message");
+                if(m != null && !"null".equalsIgnoreCase(m)) {
+                    Toast t = Toast.makeText(getBaseContext(), message.trim(), Toast.LENGTH_SHORT);
+                    t.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL, 0, 0);
+                    t.show();
+                }
                 Intent registrationComplete = new Intent(QuickstartPreferences.REGISTRATION_COMPLETE);
                 registrationComplete.putExtra("COMMAND", "CLOSECHAT");
                 LocalBroadcastManager.getInstance(this).sendBroadcast(registrationComplete);
+            } else if("badge".equalsIgnoreCase(status)) {
+                String count = command.getString("count");
+                String m = command.getString("message");
+                BadgeUtil.setBadge(getBaseContext(), Integer.parseInt(count));
+                messageText = m;
             }
             else {
                 messageText = command.getString("message");

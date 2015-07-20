@@ -129,17 +129,19 @@ public class UparService {
     @Path("/getSitting")
     @GET
     @Timed
-    public UparInput getSitting(@QueryParam("regId") String regId, @QueryParam("regId") Optional<String> pairId){
+    public UparInput getSitting(@QueryParam("regId") String regId, @QueryParam("pairId") Optional<String> pairId){
     	if(checkOngoingSitting(pairId)){
     		return getOngoingSittingError();
     	}
 		UparInput input = new UparInput();
     	if(AbhyasiQueueManager.getInstance().add(regId)){
     		input.setSubmit(SubmitType.success);
+    		input.setMessage("Added to queue with " + (AbhyasiQueueManager.getInstance().getAbhyasiCount() - 1) + " abhyasi in front of you");
     		broadcastBadgeToPrefects(AbhyasiQueueManager.getInstance().getAbhyasiCount(), true);
     	}
     	else{
-    		input.setSubmit(SubmitType.error);    		
+    		input.setSubmit(SubmitType.error);    
+    		input.setMessage(GenericMessageType.alreadyRequestedASitting);
     	}
         return input;
     }
@@ -147,8 +149,9 @@ public class UparService {
     private void broadcastBadgeToPrefects(Integer count, boolean added){
     	UparInput input = new UparInput();
     	input.setCount(count);
-    	if(added){
-    		input.setMessage(GenericMessageType.abhyasiJoined);
+    	input.setSubmit(SubmitType.badge);
+         if(added){
+    	   input.setMessage(GenericMessageType.abhyasiJoined);
     	}
     	sendMessage(PREFECT_TOPIC, input);
     }
@@ -160,6 +163,7 @@ public class UparService {
     	if(checkOngoingSitting(pairId)){
     		return getOngoingSittingError();
     	}
+    	int initiialCout = AbhyasiQueueManager.getInstance().getAbhyasiCount();
     	String pairID = null;
         String abhyasiRegID = AbhyasiQueueManager.getInstance().poll();
         UparInput input = new UparInput();
@@ -172,7 +176,9 @@ public class UparService {
 		    input.setSubmit(SubmitType.error);
 		    input.setMessage(GenericMessageType.noAbhyasiAvailable);
 		}
-        broadcastBadgeToPrefects(AbhyasiQueueManager.getInstance().getAbhyasiCount(), false);
+        if(initiialCout != AbhyasiQueueManager.getInstance().getAbhyasiCount()){
+            broadcastBadgeToPrefects(AbhyasiQueueManager.getInstance().getAbhyasiCount(), false);
+        }
         return input;
     }
     
@@ -247,14 +253,17 @@ public class UparService {
     	
     	Pair pair = PairingManager.getInstance().getPair(pairId);
     	UparInput input = new UparInput();
+        input.setSubmit(SubmitType.close);
+        input.setMessage(GenericMessageType.sessionClose);
     	if(PairingManager.getInstance().closePair(pairId)){
 	    	String targetRegId = pair.getAbhyasiRegID();
 	    	if(targetRegId.equals(regId)){
 	    		targetRegId = pair.getPrefectRegID();
-	    	}	    	
-	    	input.setSubmit(SubmitType.close);
-			input.setMessage(GenericMessageType.sessionClose);
+	    	}
 			sendMessage(targetRegId, input);
+    	}
+    	else{
+    	    input.setMessage(GenericMessageType.invalidSittingSession);
     	}
     	return input;
     }
