@@ -39,6 +39,10 @@ public class PairingManager {
 		return null;
 	}
 	
+	public boolean isPairCached(String pairID){
+		return cache.isKeyInCache(pairID);
+	}
+	
 	public boolean closePair(String pairID){
 		return cache.remove(pairID);
 	}
