@@ -11,6 +11,7 @@ import javax.ws.rs.core.MediaType;
 
 import or.heartfulness.upar.pojo.RegistrationResponse;
 
+import org.eclipse.jetty.server.UserIdentity;
 import org.heartfulness.upar.gcm.GcmSender;
 import org.heartfulness.upar.input.UparInput;
 import org.heartfulness.upar.input.UparInput.GenericMessageType;
@@ -128,7 +129,10 @@ public class UparService {
     @Path("/getSitting")
     @GET
     @Timed
-    public UparInput getSitting(@QueryParam("regId") String regId){
+    public UparInput getSitting(@QueryParam("regId") String regId, @QueryParam("regId") Optional<String> pairId){
+    	if(checkOngoingSitting(pairId)){
+    		return getOngoingSittingError();
+    	}
 		UparInput input = new UparInput();
     	if(AbhyasiQueueManager.getInstance().add(regId)){
     		input.setSubmit(SubmitType.success);
@@ -152,8 +156,11 @@ public class UparService {
     @Path("/giveSitting")
     @GET
     @Timed
-    public UparInput giveSitting(@QueryParam("regId") String regId){
-        String pairID = null;
+    public UparInput giveSitting(@QueryParam("regId") String regId, @QueryParam("regId") Optional<String> pairId){
+    	if(checkOngoingSitting(pairId)){
+    		return getOngoingSittingError();
+    	}
+    	String pairID = null;
         String abhyasiRegID = AbhyasiQueueManager.getInstance().poll();
         UparInput input = new UparInput();
         if(abhyasiRegID != null){
@@ -161,12 +168,23 @@ public class UparService {
 		    input.setSubmit(SubmitType.sharePair);
 		    input.setMessage(pairID);
 		    sendMessage(abhyasiRegID, input);
-	    	broadcastBadgeToPrefects(AbhyasiQueueManager.getInstance().getAbhyasiCount(), false);
 		} else {
 		    input.setSubmit(SubmitType.error);
 		    input.setMessage(GenericMessageType.noAbhyasiAvailable);
 		}
+        broadcastBadgeToPrefects(AbhyasiQueueManager.getInstance().getAbhyasiCount(), false);
         return input;
+    }
+    
+    private boolean checkOngoingSitting(Optional<String> pairID){
+    	return (pairID != null) && (PairingManager.getInstance().isPairCached(pairID.toString()));
+    }
+    
+    private UparInput getOngoingSittingError(){
+    	UparInput input = new UparInput();
+    	input.setSubmit(SubmitType.error);
+    	input.setMessage(GenericMessageType.alreadyInASitting);
+    	return input;
     }
     
     @Path("/cancelSitting")

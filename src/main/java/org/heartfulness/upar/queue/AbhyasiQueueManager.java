@@ -36,7 +36,7 @@ public class AbhyasiQueueManager {
 		return false;
 	}
 
-	public String poll() {
+	public synchronized String poll() {
 		String regId = null;
 		while(queue.peek() != null){
 			regId = queue.poll();
