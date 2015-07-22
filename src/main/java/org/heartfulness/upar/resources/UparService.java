@@ -21,7 +21,7 @@ import org.heartfulness.upar.input.UparInput.SubmitType;
 import org.heartfulness.upar.queue.AbhyasiQueueManager;
 import org.heartfulness.upar.queue.Pair;
 import org.heartfulness.upar.queue.PairingManager;
-import org.heartfulness.upar.queue.RegistratonQueueManager;
+import org.heartfulness.upar.queue.RegistrationQueueManager;
 import org.heartfulness.upar.util.ValidationUtil;
 
 import com.codahale.metrics.annotation.Timed;
@@ -98,7 +98,7 @@ public class UparService {
         Abhyasi abhyasi = new Abhyasi();
         abhyasi.setRegId(token);
         abhyasi.setDeviceType(DeviceType.valueOf(deviceType));
-        RegistratonQueueManager.getInstance().register(regId, abhyasi);
+        RegistrationQueueManager.getInstance().register(regId, abhyasi);
         // no other data will be sent
         return response;
     }
