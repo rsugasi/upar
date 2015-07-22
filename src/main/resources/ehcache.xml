@@ -23,7 +23,7 @@
 		maxEntriesLocalDisk="1000" 
 		eternal="false" 
 		diskSpoolBufferSizeMB="20"
-		timeToIdleSeconds="5000" timeToLiveSeconds="7200"
+		timeToLiveSeconds="7200"
 		memoryStoreEvictionPolicy="LFU" 
 		transactionalMode="off">
 		<persistence strategy="localTempSwap" />
@@ -34,7 +34,7 @@
 		maxEntriesLocalDisk="1000" 
 		eternal="false" 
 		diskSpoolBufferSizeMB="20"
-		timeToIdleSeconds="50" timeToLiveSeconds="7"
+		timeToLiveSeconds="7"
 		memoryStoreEvictionPolicy="LFU" 
 		transactionalMode="off">
 		<persistence strategy="localTempSwap" />

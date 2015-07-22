@@ -17,14 +17,20 @@ public class GcmSender {
         try {
             // Prepare JSON containing the GCM message content. What to send and where to send.
             JSONObject jGcmData = new JSONObject();
-            JSONObject jData = new JSONObject();
-            jData.put("message", msg.trim());
+            
             // Where to send GCM message.
             jGcmData.put("to", "/topics/" + topic);
             
-            // What to send in GCM message.
+            // What to send in GCM message to android device.
+            JSONObject jData = new JSONObject();
+            jData.put("message", msg.trim());            
             jGcmData.put("data", jData);
-
+            
+            // What to send in GCM message to ios device.
+            JSONObject notification = new JSONObject();
+            notification.put("body", msg.trim());
+            jGcmData.put("notification", notification);
+            
             // Create connection to send GCM Message request.
             URL url = new URL("https://android.googleapis.com/gcm/send");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();

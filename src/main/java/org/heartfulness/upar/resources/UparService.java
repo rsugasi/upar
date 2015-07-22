@@ -11,13 +11,11 @@ import javax.ws.rs.core.MediaType;
 
 import or.heartfulness.upar.pojo.RegistrationResponse;
 
-import org.eclipse.jetty.server.UserIdentity;
 import org.heartfulness.upar.gcm.GcmSender;
 import org.heartfulness.upar.input.UparInput;
 import org.heartfulness.upar.input.UparInput.GenericMessageType;
 import org.heartfulness.upar.input.UparInput.SubmitType;
 import org.heartfulness.upar.queue.AbhyasiQueueManager;
-//import org.heartfulness.upar.queue.AbhyasiQueue;
 import org.heartfulness.upar.queue.Pair;
 import org.heartfulness.upar.queue.PairingManager;
 
@@ -79,7 +77,7 @@ public class UparService {
         }
         response.setType(typeOfMember);
         response.setTopics(topics);
-        response.setName("Foo Bar");
+        response.setName(name.or(defaultType));
         response.setNotification(notification);
         
         return response;
@@ -199,22 +197,6 @@ public class UparService {
     public void cancelSitting(@QueryParam("regId") String regId){
     	AbhyasiQueueManager.getInstance().remove(regId.toString());
     	broadcastBadgeToPrefects(AbhyasiQueueManager.getInstance().getAbhyasiCount(), false);
-    }
-    
-    private UparInput sendJSONMessage(String regId, UparInput input) {
-        return input;
-    }
-
-    private UparInput alreadyInSitting(String pairId, String regId) {
-        Pair pair = PairingManager.getInstance().getPair(pairId);
-        UparInput input = null;
-        if(pair != null) {
-            input = new UparInput();
-            input.setSubmit(SubmitType.error);
-            input.setMessage(GenericMessageType.alreadyInASitting);
-            //topic = regId;
-        }
-        return input;
     }
     
     @Path("/begin")
