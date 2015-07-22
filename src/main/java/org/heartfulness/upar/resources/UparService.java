@@ -1,8 +1,5 @@
 package org.heartfulness.upar.resources;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -25,9 +22,6 @@ import org.heartfulness.upar.queue.RegistrationQueueManager;
 import org.heartfulness.upar.util.ValidationUtil;
 
 import com.codahale.metrics.annotation.Timed;
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Optional;
 
 @Path("")
@@ -151,7 +145,7 @@ public class UparService {
          if(added){
     	   input.setMessage(GenericMessageType.abhyasiJoined);
     	}
-    	sendMessage(PREFECT_TOPIC, input);
+    	sendBadge(PREFECT_TOPIC, input, count);
     }
     
     @Path("/giveSitting")
@@ -250,23 +244,18 @@ public class UparService {
     	return input;
     }
     
+    public void sendBadge(String regId, UparInput input, int count) {
+        ValidationUtil vu = new ValidationUtil();
+        String msg = vu.validateAndReturnObject(input);
+        
+        GcmSender gcmSender = new GcmSender();
+        gcmSender.sendBadge(regId, msg, count);
+    }
+    
     public void sendMessage(String regId, UparInput input) {
-		try {
-			ObjectMapper mapper = new ObjectMapper();
-			ByteArrayOutputStream bos = new ByteArrayOutputStream();
-			mapper.writeValue(bos, input);
-			GcmSender gcmSender = new GcmSender();
-			gcmSender.sendMessage(regId, bos.toString());
-		} catch (JsonGenerationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (JsonMappingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
+		ValidationUtil vu = new ValidationUtil();
+	    String msg = vu.validateAndReturnObject(input);
+		GcmSender gcmSender = new GcmSender();
+		gcmSender.sendMessage(regId, msg);
 	}
 }

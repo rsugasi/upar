@@ -14,22 +14,55 @@ public class GcmSender {
     public static final String API_KEY = "AIzaSyBc_qArgXgt-8d-hVSPfc-a8i4M38wAU7k";
     
     public void sendMessage(String topic, String msg) {
-        try {
-            // Prepare JSON containing the GCM message content. What to send and where to send.
-            JSONObject jGcmData = new JSONObject();
-            
-            // Where to send GCM message.
-            jGcmData.put("to", "/topics/" + topic);
-            
-            // What to send in GCM message to android device.
-            JSONObject jData = new JSONObject();
-            jData.put("message", msg.trim());            
-            jGcmData.put("data", jData);
-            
-            // What to send in GCM message to ios device.
-            JSONObject notification = new JSONObject();
-            notification.put("body", msg.trim());
-            jGcmData.put("notification", notification);
+        // Prepare JSON containing the GCM message content. What to send and where to send.
+        JSONObject jGcmData = new JSONObject();
+        
+        // Where to send GCM message.
+        jGcmData.put("to", "/topics/" + topic);
+        
+        // What to send in GCM message to android device.
+        jGcmData.put("data", getJSONForAndroid(msg));
+        
+        // What to send in GCM message to ios device.
+        jGcmData.put("notification", getJSONForIOS(msg));
+        
+        sendMessage(topic, jGcmData);
+    }
+    
+    public void sendBadge(String topic, String msg, int count) {
+           // Prepare JSON containing the GCM message content. What to send and where to send.
+           JSONObject jGcmData = new JSONObject();
+           
+           // Where to send GCM message.
+           jGcmData.put("to", "/topics/" + topic);
+           
+           // What to send in GCM message to android device.
+           jGcmData.put("data", getJSONForAndroid(msg));
+           
+           // What to send in GCM message to ios device.
+           JSONObject notification = getJSONForIOS(msg);
+           notification.put("badge", count);
+           jGcmData.put("notification", notification);
+           
+           sendMessage(topic, jGcmData);
+       }
+    
+    private JSONObject getJSONForIOS(String msg) {
+        JSONObject notification = new JSONObject();
+        notification.put("body", msg.trim());
+        notification.put("badge", 0);
+        return notification;
+        
+    }
+    
+    private JSONObject getJSONForAndroid(String msg) {
+        JSONObject jData = new JSONObject();
+        jData.put("message", msg.trim());            
+        return jData;
+    }
+    
+    public void sendMessage(String topic, JSONObject msg) {
+        try {           
             
             // Create connection to send GCM Message request.
             URL url = new URL("https://android.googleapis.com/gcm/send");
@@ -41,7 +74,7 @@ public class GcmSender {
 
             // Send GCM message content.
             OutputStream outputStream = conn.getOutputStream();
-            outputStream.write(jGcmData.toString().getBytes());
+            outputStream.write(msg.toString().getBytes());
 
             // Read GCM response.
             InputStream inputStream = conn.getInputStream();
