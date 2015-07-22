@@ -40,7 +40,7 @@ public class AbhyasiQueueManager {
 		String regId = null;
 		while(queue.peek() != null){
 			regId = queue.poll();
-			if(cache.isKeyInCache(regId)){
+			if(cache.isKeyInCache(regId) && cache.get(regId) != null && !cache.get(regId).isExpired()){
 				cache.remove(regId);
 				return regId;
 			}

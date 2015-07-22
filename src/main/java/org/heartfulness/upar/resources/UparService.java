@@ -3,12 +3,15 @@ package org.heartfulness.upar.resources;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
+import or.heartfulness.upar.pojo.Abhyasi;
+import or.heartfulness.upar.pojo.Abhyasi.DeviceType;
 import or.heartfulness.upar.pojo.RegistrationResponse;
 
 import org.heartfulness.upar.gcm.GcmSender;
@@ -18,6 +21,8 @@ import org.heartfulness.upar.input.UparInput.SubmitType;
 import org.heartfulness.upar.queue.AbhyasiQueueManager;
 import org.heartfulness.upar.queue.Pair;
 import org.heartfulness.upar.queue.PairingManager;
+import org.heartfulness.upar.queue.RegistratonQueueManager;
+import org.heartfulness.upar.util.ValidationUtil;
 
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.core.JsonGenerationException;
@@ -28,7 +33,6 @@ import com.google.common.base.Optional;
 @Path("")
 @Produces(MediaType.APPLICATION_JSON)
 public class UparService {
-    private final String defaultName = "Random ID";
     private static final String defaultType = "PREFECT";
     private static final String PREFECT_TOPIC = "prefect";
     
@@ -37,33 +41,29 @@ public class UparService {
     @Path("/registerUser")
     @GET
     @Timed
-    public RegistrationResponse registerUser(@QueryParam("regId") Optional<String> regId, 
+    public RegistrationResponse registerUser(@QueryParam("regId") String regId, 
             @QueryParam("fullname") Optional<String> name, 
             @QueryParam("abhyasiid") Optional<String> abhyasiId,
-            @QueryParam("type") Optional<String> type) {
+            @DefaultValue("abhyasi")@QueryParam("type") String type) {
         // retrieve the abhyasi id for this reg Id, 
         // if none exist, add a new row in the persistence storage
-        // if one exists, delete and add this reg Id to it 
-        final String value = String.format("%s", regId.or(defaultName)).replaceAll("[^a-zA-Z0-9]","");
-        int length = value.length();
         
-        String token = ((length>32)?value.substring(0, 32):value);
-        System.out.println("Registration ID received " + token);
-        
-        String typeOfMember = String.format("%s", type.or(defaultType));
         // TODO Get information about the User
         boolean isPrefect = false;
         boolean isAbhyasi = false;
+        String typeOfMember = type;
         if(typeOfMember.equalsIgnoreCase("PREFECT")) {
             isPrefect = true;
         } else if(typeOfMember.equalsIgnoreCase("ABHYASI")) {
             isAbhyasi = true;
         }
         RegistrationResponse response = new RegistrationResponse();
-        response.setAuthToken(token);
+        response.setAuthToken(regId);
         
         String[] topics = null;
         String notification = "";
+        ValidationUtil vu = new ValidationUtil();
+        String token = vu.validateAndReturnToken(regId);
         if(isPrefect) {
             typeOfMember = "PREFECT";
             topics = new String[] {"global", "prefect", token};
@@ -82,23 +82,23 @@ public class UparService {
         
         return response;
     }
-    
+
     @Path("/registerDevice")
     @GET
-    @Timed
-    public RegistrationResponse registerDevice(@QueryParam("registrationId") Optional<String> regId) {
+    @Timed 
+    public RegistrationResponse registerDevice(@QueryParam("registrationId") String regId, 
+            @DefaultValue("android")@QueryParam("deviceType") String deviceType) {
         // retrieve the abhyasi id for this reg Id, 
         // if none exist, add a new row in the persistence storage
         // if one exists, delete and add this reg Id to it 
-        final String value = String.format("%s", regId.or(defaultName)).replaceAll("[^a-zA-Z0-9]","");
-        int length = value.length();
         
-        String token = ((length>32)?value.substring(0, 32):value);
-        System.out.println("Registration ID received " + token);
-        
-        
+        String token = ((regId.length() > 32) ? regId.substring(0, 32):regId);        
         RegistrationResponse response = new RegistrationResponse();
         response.setAuthToken(token);
+        Abhyasi abhyasi = new Abhyasi();
+        abhyasi.setRegId(token);
+        abhyasi.setDeviceType(DeviceType.valueOf(deviceType));
+        RegistratonQueueManager.getInstance().register(regId, abhyasi);
         // no other data will be sent
         return response;
     }

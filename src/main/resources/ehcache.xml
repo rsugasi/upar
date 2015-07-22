@@ -34,10 +34,19 @@
 		maxEntriesLocalDisk="1000" 
 		eternal="false" 
 		diskSpoolBufferSizeMB="20"
-		timeToLiveSeconds="7"
+		timeToLiveSeconds="70"
 		memoryStoreEvictionPolicy="LFU" 
 		transactionalMode="off">
 		<persistence strategy="localTempSwap" />
 	</cache>
+
+    <cache name="registrationQueue" 
+        maxEntriesLocalHeap="10000"
+        maxEntriesLocalDisk="1000" 
+        eternal="true" 
+        diskSpoolBufferSizeMB="20"
+        transactionalMode="off">
+        <persistence strategy="localTempSwap" />
+    </cache>
  
 </ehcache>
