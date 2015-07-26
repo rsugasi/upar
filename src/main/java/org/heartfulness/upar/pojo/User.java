@@ -1,4 +1,4 @@
-package or.heartfulness.upar.pojo;
+package org.heartfulness.upar.pojo;
 
 public class User {
     

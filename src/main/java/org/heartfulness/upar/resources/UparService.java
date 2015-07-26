@@ -7,19 +7,24 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
-import or.heartfulness.upar.pojo.Abhyasi;
-import or.heartfulness.upar.pojo.Abhyasi.DeviceType;
-import or.heartfulness.upar.pojo.RegistrationResponse;
-
+import org.heartfulness.upar.exception.UparException;
+import org.heartfulness.upar.exception.UparExceptionType;
 import org.heartfulness.upar.gcm.GcmSender;
 import org.heartfulness.upar.input.UparInput;
 import org.heartfulness.upar.input.UparInput.GenericMessageType;
 import org.heartfulness.upar.input.UparInput.SubmitType;
+import org.heartfulness.upar.pojo.Abhyasi;
+import org.heartfulness.upar.pojo.DeviceType;
+import org.heartfulness.upar.pojo.RegistrationResponse;
+import org.heartfulness.upar.pojo.UserType;
 import org.heartfulness.upar.queue.AbhyasiQueueManager;
 import org.heartfulness.upar.queue.Pair;
 import org.heartfulness.upar.queue.PairingManager;
 import org.heartfulness.upar.queue.RegistrationQueueManager;
 import org.heartfulness.upar.util.ValidationUtil;
+import org.srcm.openerp.dto.AbhyasiDetailsDTO;
+import org.srcm.ssi.openerp.abhyasi.AbhyasiClient;
+import org.srcm.ssi.openerp.abhyasi.PrefectClient;
 
 import com.codahale.metrics.annotation.Timed;
 import com.google.common.base.Optional;
@@ -35,46 +40,42 @@ public class UparService {
     @Path("/registerUser")
     @GET
     @Timed
-    public RegistrationResponse registerUser(@QueryParam("regId") String regId, 
-            @QueryParam("fullname") Optional<String> name, 
-            @QueryParam("abhyasiid") Optional<String> abhyasiId,
-            @DefaultValue("abhyasi")@QueryParam("type") String type) {
+    public Abhyasi registerUser(@QueryParam("regId") String regId, 
+            @QueryParam("name") String name, 
+            @QueryParam("abhyasiId") Optional<String> abhyasiIdArg,
+            @DefaultValue("ABHYASI")@QueryParam("userType") String userTypeArg,
+            @DefaultValue("android")@QueryParam("deviceType") String deviceTypeArg) throws UparException{
         // retrieve the abhyasi id for this reg Id, 
         // if none exist, add a new row in the persistence storage
-        
-        // TODO Get information about the User
-        boolean isPrefect = false;
-        boolean isAbhyasi = false;
-        String typeOfMember = type;
-        if(typeOfMember.equalsIgnoreCase("PREFECT")) {
-            isPrefect = true;
-        } else if(typeOfMember.equalsIgnoreCase("ABHYASI")) {
-            isAbhyasi = true;
+        try{
+	    	if(RegistrationQueueManager.getInstance().registeredToGCM(regId)){
+	    		throw UparExceptionType.Not_Registered_With_GCM.getException();
+	    	}
+	        AbhyasiClient client = new AbhyasiClient();
+	        AbhyasiDetailsDTO abhyasiDTO;
+	        UserType userType = UserType.valueOf(userTypeArg);
+	        DeviceType deviceType = DeviceType.valueOf(deviceTypeArg);
+	        String abhyasiId = null;
+	        if(abhyasiIdArg != null){
+	        	abhyasiId = abhyasiIdArg.toString();
+	            abhyasiDTO = client.searchAbhyasiByNameAndPermanentId(name, abhyasiId.toString());
+	            if(abhyasiDTO == null){
+	            	throw UparExceptionType.Invalid_Abhyasi_ID.getException();
+	            }
+	            else{
+	            	userType = UserType.ABHYASI;
+	            	if(new PrefectClient().readPrefect(abhyasiId.toString()) != null){
+	            		userType = UserType.PREFECT;
+	            	}
+	            }
+	        }
+	        return RegistrationQueueManager.getInstance().setAbhyasiDetails(regId, name, abhyasiId, userType, deviceType);
         }
-        RegistrationResponse response = new RegistrationResponse();
-        response.setAuthToken(regId);
-        
-        String[] topics = null;
-        String notification = "";
-        ValidationUtil vu = new ValidationUtil();
-        String token = vu.validateAndReturnToken(regId);
-        if(isPrefect) {
-            typeOfMember = "PREFECT";
-            topics = new String[] {"global", "prefect", token};
-            notification = "yes";
-        } else if(isAbhyasi){
-            typeOfMember = "ABHYASI";
-            topics = new String[] {"global", "abhyasi", token};
-        } else {
-            typeOfMember = "";
-            topics = new String[] {"global"};
-        }
-        response.setType(typeOfMember);
-        response.setTopics(topics);
-        response.setName(name.or(defaultType));
-        response.setNotification(notification);
-        
-        return response;
+        catch(UparException ue){
+        	throw ue;
+        } catch (Exception e) {
+			throw UparExceptionType.AIMS_Exception.getException();
+		}
     }
 
     @Path("/registerDevice")
@@ -132,7 +133,7 @@ public class UparService {
     		broadcastBadgeToPrefects(AbhyasiQueueManager.getInstance().getAbhyasiCount(), true);
     	}
     	else{
-    		input.setSubmit(SubmitType.error);    
+    		input.setSubmit(SubmitType.error);
     		input.setMessage(GenericMessageType.alreadyRequestedASitting);
     	}
         return input;

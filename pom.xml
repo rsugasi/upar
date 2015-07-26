@@ -42,6 +42,27 @@
         <artifactId>ehcache</artifactId>
         <version>2.9.0</version>
     </dependency>
+        <dependency>
+        <groupId>org.srcm.ssi</groupId>
+        <artifactId>ssi</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+		<groupId>org.srcm.openerp-dto</groupId>
+		<artifactId>openerp-dto</artifactId>
+		<version>0.0.2-SNAPSHOT</version>
+	</dependency>
+	<dependency>
+		<groupId>org.srcm.satsanghattendance</groupId>
+		<artifactId>satsanghattendance-dto</artifactId>
+		<version>0.0.2-SNAPSHOT</version>
+	</dependency>
+	<dependency>
+		<groupId>org.srcm.mm3</groupId>
+		<artifactId>mm3-dto</artifactId>
+		<version>0.0.2-SNAPSHOT</version>
+	</dependency>
+   
   </dependencies>
   <build>
       <plugins>

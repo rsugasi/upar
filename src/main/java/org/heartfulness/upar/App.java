@@ -5,12 +5,12 @@ import io.dropwizard.auth.AuthFactory;
 import io.dropwizard.auth.oauth.OAuthFactory;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-import or.heartfulness.upar.pojo.User;
 
 import org.heartfulness.upar.admin.resources.BroadCastService;
 import org.heartfulness.upar.auth.AdminConstraintSecurityHandler;
 import org.heartfulness.upar.auth.OAuthenticator;
 import org.heartfulness.upar.health.TemplateHealthCheck;
+import org.heartfulness.upar.pojo.User;
 import org.heartfulness.upar.resources.UparService;
 
 public class App extends Application<UparConfiguration> {

@@ -1,8 +1,9 @@
 package org.heartfulness.upar.auth;
 
+import org.heartfulness.upar.pojo.User;
+
 import io.dropwizard.auth.Authenticator;
 import io.dropwizard.auth.basic.BasicCredentials;
-import or.heartfulness.upar.pojo.User;
 
 import com.google.common.base.Optional;
 

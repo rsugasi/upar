@@ -1,6 +1,7 @@
-package or.heartfulness.upar.pojo;
+package org.heartfulness.upar.pojo;
 
 import java.io.Serializable;
+import java.util.List;
 
 public class Abhyasi implements Serializable{
 
@@ -12,11 +13,16 @@ public class Abhyasi implements Serializable{
     private String name;
     private String abhyasiId;
     private String regId;
-    private String email;
-    private boolean prefect;
-    private DeviceType deviceType;
+    private String userType;
+    private String deviceType;
+    private String notification;
+    private List<String> topics;
     
-        
+    public Abhyasi(){
+    	
+    }
+    
+    
     public String getName() {
         return name;
     }
@@ -52,44 +58,58 @@ public class Abhyasi implements Serializable{
     }
 
 
-
-    public String getEmail() {
-        return email;
-    }
-
-
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-
-
     public boolean isPrefect() {
-        return prefect;
+        return userType != null && UserType.PREFECT.equals(UserType.valueOf(userType));
     }
 
+    
+    public String getUserType() {
+		return userType;
+	}
+
+	public void setUserType(String userType) {
+		this.userType = userType;
+	}
+
+	public void setUserType(UserType userType) {
+		this.userType = userType.name();
+	}
 
 
-    public void setPrefect(boolean prefect) {
-        this.prefect = prefect;
-    }
-
-
-
-    public DeviceType getDeviceType() {
+	public String getDeviceType() {
         return deviceType;
     }
 
-
-
-    public void setDeviceType(DeviceType deviceType) {
+	public void setDeviceType(String deviceType) {
         this.deviceType = deviceType;
     }
 
+    public void setDeviceType(DeviceType deviceType) {
+    	if(deviceType != null){
+    		this.deviceType = deviceType.name();
+    	}
+    }
+
+    public String getNotification() {
+		return notification;
+	}
+
+	public void setNotification(String notification) {
+		this.notification = notification;
+	}
 
 
-    @Override
+	public List<String> getTopics() {
+		return topics;
+	}
+
+
+	public void setTopics(List<String> topics) {
+		this.topics = topics;
+	}
+
+
+	@Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
@@ -97,9 +117,7 @@ public class Abhyasi implements Serializable{
                 + ((abhyasiId == null) ? 0 : abhyasiId.hashCode());
         result = prime * result
                 + ((deviceType == null) ? 0 : deviceType.hashCode());
-        result = prime * result + ((email == null) ? 0 : email.hashCode());
         result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + (prefect ? 1231 : 1237);
         result = prime * result + ((regId == null) ? 0 : regId.hashCode());
         return result;
     }
@@ -122,17 +140,10 @@ public class Abhyasi implements Serializable{
             return false;
         if (deviceType != other.deviceType)
             return false;
-        if (email == null) {
-            if (other.email != null)
-                return false;
-        } else if (!email.equals(other.email))
-            return false;
         if (name == null) {
             if (other.name != null)
                 return false;
         } else if (!name.equals(other.name))
-            return false;
-        if (prefect != other.prefect)
             return false;
         if (regId == null) {
             if (other.regId != null)
@@ -142,9 +153,4 @@ public class Abhyasi implements Serializable{
         return true;
     }
 
-
-
-    public enum DeviceType {
-        android, ios
-    }
 }

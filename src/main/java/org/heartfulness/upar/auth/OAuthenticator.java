@@ -1,10 +1,11 @@
 package org.heartfulness.upar.auth;
 
+import org.heartfulness.upar.pojo.User;
+
 import com.google.common.base.Optional;
 
 import io.dropwizard.auth.AuthenticationException;
 import io.dropwizard.auth.Authenticator;
-import or.heartfulness.upar.pojo.User;
 
 public class OAuthenticator implements Authenticator<String, User>  {
 
