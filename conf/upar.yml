@@ -9,3 +9,4 @@ server:
 template: Hello
 defaultName: Stranger
 defaultTopic: global
+isAIMSEnabled: false

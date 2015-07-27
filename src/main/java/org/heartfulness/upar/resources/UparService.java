@@ -34,8 +34,8 @@ import com.google.common.base.Optional;
 public class UparService {
     private static final String defaultType = "PREFECT";
     private static final String PREFECT_TOPIC = "prefect";
-    
-    public UparService() {    }
+    private final boolean isAIMSEnabled;
+    public UparService(boolean isAIMSEnabled) { this.isAIMSEnabled = isAIMSEnabled;   }
     
     @Path("/registerUser")
     @GET
@@ -51,20 +51,21 @@ public class UparService {
 	    	if(RegistrationQueueManager.getInstance().registeredToGCM(regId)){
 	    		throw UparExceptionType.Not_Registered_With_GCM.getException();
 	    	}
-	        AbhyasiClient client = new AbhyasiClient();
 	        AbhyasiDetailsDTO abhyasiDTO;
 	        UserType userType = UserType.valueOf(userTypeArg);
 	        DeviceType deviceType = DeviceType.valueOf(deviceTypeArg);
 	        String abhyasiId = null;
 	        if(abhyasiIdArg != null){
 	        	abhyasiId = abhyasiIdArg.toString();
-	            abhyasiDTO = client.searchAbhyasiByNameAndPermanentId(name, abhyasiId.toString());
-	            if(abhyasiDTO == null){
-	            	throw UparExceptionType.Invalid_Abhyasi_ID.getException();
-	            }
-	            else{
+	        	if(isAIMSEnabled) {
+	        		AbhyasiClient client = new AbhyasiClient();
+	        		abhyasiDTO = client.searchAbhyasiByNameAndPermanentId(name, abhyasiId.toString());
+	        		if(abhyasiDTO == null){
+		            	throw UparExceptionType.Invalid_Abhyasi_ID.getException();
+		            }
+	        	} else{
 	            	userType = UserType.ABHYASI;
-	            	if(new PrefectClient().readPrefect(abhyasiId.toString()) != null){
+	            	if(isAIMSEnabled && (new PrefectClient().readPrefect(abhyasiId.toString()) != null)) {
 	            		userType = UserType.PREFECT;
 	            	}
 	            }

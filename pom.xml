@@ -46,6 +46,12 @@
         <groupId>org.srcm.ssi</groupId>
         <artifactId>ssi</artifactId>
         <version>0.0.1-SNAPSHOT</version>
+        <exclusions>
+        <exclusion>
+        	<groupId>com.sun.jersey</groupId>
+        	<artifactId>jersey-core</artifactId>
+        </exclusion>
+        </exclusions>
     </dependency>
     <dependency>
 		<groupId>org.srcm.openerp-dto</groupId>

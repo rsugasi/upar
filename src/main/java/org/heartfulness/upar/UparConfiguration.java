@@ -13,6 +13,9 @@ public class UparConfiguration extends Configuration {
     
     @NotEmpty
     private String defaultTopic;
+    
+    
+    private boolean isAIMSEnabled;
 
     @JsonProperty
     public String getTemplate() {
@@ -42,5 +45,15 @@ public class UparConfiguration extends Configuration {
     @JsonProperty
     public void setDefaultTopic(String defaultTopic) {
         this.defaultTopic = defaultTopic;
+    }
+    
+    @JsonProperty
+    public boolean getIsAIMSEnabled() {
+    	return isAIMSEnabled;
+    }
+    
+    @JsonProperty
+    public void setIsAIMSEnabled(boolean isAIMSEnabled) {
+    	this.isAIMSEnabled = isAIMSEnabled;
     }
 }
