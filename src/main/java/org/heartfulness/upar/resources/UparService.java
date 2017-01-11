@@ -47,8 +47,10 @@ public class UparService {
             @DefaultValue("android")@QueryParam("deviceType") String deviceTypeArg) throws UparException{
         // retrieve the abhyasi id for this reg Id, 
         // if none exist, add a new row in the persistence storage
+    	System.out.println("regId : " + regId + " size : " + regId.length());
         try{
-	    	if(RegistrationQueueManager.getInstance().registeredToGCM(regId)){
+        	boolean isRegistered = RegistrationQueueManager.getInstance().registeredToGCM(regId);
+	    	if(!isRegistered){
 	    		throw UparExceptionType.Not_Registered_With_GCM.getException();
 	    	}
 	        AbhyasiDetailsDTO abhyasiDTO;
@@ -94,7 +96,8 @@ public class UparService {
         Abhyasi abhyasi = new Abhyasi();
         abhyasi.setRegId(token);
         abhyasi.setDeviceType(DeviceType.valueOf(deviceType));
-        RegistrationQueueManager.getInstance().register(regId, abhyasi);
+        RegistrationQueueManager.getInstance().register(token, abhyasi);
+        System.out.println("regId : " + token );
         // no other data will be sent
         return response;
     }

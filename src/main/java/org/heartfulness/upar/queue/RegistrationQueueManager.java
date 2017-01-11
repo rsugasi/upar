@@ -44,7 +44,7 @@ public class RegistrationQueueManager {
     }
     
     public Abhyasi setAbhyasiDetails(String regId, String name, String abhyasiId, UserType userType, DeviceType deviceType) throws UparException{
-        if(!cache.isKeyInCache(regId) && cache.get(regId) != null){
+        if(registeredToGCM(regId)){
             Abhyasi abhyasi = (Abhyasi)cache.get(regId).getObjectValue();
             abhyasi.setAbhyasiId(abhyasiId);
             abhyasi.setName(name);
@@ -52,7 +52,7 @@ public class RegistrationQueueManager {
         	abhyasi.setDeviceType(deviceType);
         	abhyasi.setNotification(userType.getNotification());
         	abhyasi.setTopics(Arrays.asList(userType.getTopics()));
-        	abhyasi.getTopics().add(regId);
+        	//abhyasi.getTopics().add(regId);
         	return abhyasi;
         }
         throw UparExceptionType.Abhyasi_Does_Not_Exist.getException();
